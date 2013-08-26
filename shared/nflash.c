@@ -509,6 +509,7 @@ nflash_read(hndnand_t *nfl, uint64 offset, uint len, uchar *buf)
 	uint res;
 
 	ASSERT(sih);
+
 	mask = NFL_SECTOR_SIZE - 1;
 	if ((offset & mask) != 0 || (len & mask) != 0)
 		return 0;

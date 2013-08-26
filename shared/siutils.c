@@ -1188,6 +1188,10 @@ BCMATTACHFN(si_doattach)(si_info_t *sii, uint devid, osl_t *osh, void *regs,
 	/* Init nvram from flash if it exists */
 	nvram_init((void *)&(sii->pub));
 
+#if defined(_CFE_) && defined(BCM_DEVINFO)
+	devinfo_nvram_init((void *)&(sii->pub));
+#endif
+
 	/* Init nvram from sprom/otp if they exist */
 	if (srom_var_init(&sii->pub, BUSTYPE(bustype), regs, sii->osh, vars, varsz)) {
 		SI_ERROR(("si_doattach: srom_var_init failed: bad srom\n"));

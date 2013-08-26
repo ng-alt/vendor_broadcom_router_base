@@ -56,9 +56,11 @@
 #define d64rxregs	dregs.d64_u.rxregs_64
 #define txd64		dregs.d64_u.txd_64
 #define rxd64		dregs.d64_u.rxd_64
+/* Foxconn added start pling 12/04/2007 */
 #if (defined BCM4716) || (defined BCM5325E)
 int dma_qos_enable = 0;
 #endif
+/* Foxconn added end pling 12/04/2007 */
 
 /* default dma message level (if input msg_level pointer is null in dma_attach()) */
 static uint dma_msg_level =
@@ -3149,11 +3151,10 @@ dma64_getnexttxp(dma_info_t *di, txd_range_t range)
 			map = &di->txp_dmah[i];
 			size = map->origsize;
 			nsegs = map->nsegs;
-			/* borg 20130201*/
 			if (nsegs > (uint)NTXDACTIVE(i, end)) {
 				di->xs0cd = i;
 				break;
-			}			
+			}
 		} else {
 #if ((!defined(__mips__) && !defined(__ARM_ARCH_7A__)) || defined(__NetBSD__))
 			size = (BUS_SWAP32(R_SM(&di->txd64[i].ctrl2)) & D64_CTRL2_BC_MASK);

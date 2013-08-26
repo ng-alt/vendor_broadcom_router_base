@@ -29,11 +29,11 @@
 #include <proto/bcmeth.h>
 #include <proto/bcmevent.h>
 #include <proto/802.11.h>
-/* modify start by Hank 08/21/2012*/
+/*Foxconn modify start by Hank 08/21/2012*/
 /*change include path in 2.6.36*/
 #include "../shared/bcmwifi/include/bcmwifi_channels.h"
 #include "../shared/bcmwifi/include/bcmwifi_rates.h"
-/* modify end by Hank 08/21/2012*/
+/*Foxconn modify end by Hank 08/21/2012*/
 
 #ifndef LINUX_POSTMOGRIFY_REMOVAL
 #include <bcm_mpool_pub.h>
@@ -1810,10 +1810,10 @@ typedef struct wl_po {
 #define WLC_BW_40MHZ_BIT		(1<<1)
 #define WLC_BW_80MHZ_BIT		(1<<2)
 
-/* add start by Hank for HT80 03/14/2012*/
+/*Foxconn add start by Hank for HT80 03/14/2012*/
 #define WLC_N_BW_20IN2G_80IN5G		3
 #define WLC_N_BW_40IN2G_80IN5G		4
-/* add end by Hank for HT80 03/14/2012*/
+/*Foxconn add end by Hank for HT80 03/14/2012*/
 
 /* Bandwidth capabilities */
 #define WLC_BW_CAP_20MHZ		(WLC_BW_20MHZ_BIT)
@@ -1839,6 +1839,12 @@ typedef struct wl_po {
 
 #define LISTEN_INTERVAL			10
 #define	INTERFERE_OVRRIDE_OFF	-1	/* interference override off */
+
+/* interfernece mode bit-masks (ACPHY) */
+#define ACPHY_ACI_GLITCHBASED_DESENSE 1   /* bit 0 */
+#define ACPHY_ACI_HWACI_PKTGAINLMT 2      /* bit 1 */
+#define ACPHY_ACI_W2NB_PKTGAINLMT 4       /* bit 2 */
+#define ACPHY_ACI_MAX_MODE 7
 
 typedef struct wl_aci_args {
 	int enter_aci_thresh; /* Trigger level to start detecting ACI */
@@ -2742,6 +2748,9 @@ typedef struct wl_txchain_pwr_offsets {
 #define WL_LPC_VAL	        0x00040000
 #define WL_L2FILTER_VAL		0x00080000
 #define WL_TXBF_VAL		0x00100000
+#define WL_WMF_VAL		0x00200000
+#define WL_INTFERMON_VAL        0x00400000
+
 /* use top-bit for WL_TIME_STAMP_VAL because this is a modifier
  * rather than a message-type of its own
  */
@@ -3337,7 +3346,7 @@ typedef struct {
 	uint32  rxmpdu_stbc;    /* count for stbc received */
 } wl_cnt_ver_six_t;
 
-#define	WL_DELTA_STATS_T_VERSION	1	/* current version of wl_delta_stats_t struct */
+#define	WL_DELTA_STATS_T_VERSION	2	/* current version of wl_delta_stats_t struct */
 
 typedef struct {
 	uint16 version;     /* see definition of WL_DELTA_STATS_T_VERSION */
@@ -3375,6 +3384,13 @@ typedef struct {
 	uint32  rx432mbps;	/* packets rx at 432 mbps */
 	uint32  rx486mbps;	/* packets rx at 486 mbps */
 	uint32  rx540mbps;	/* packets rx at 540 mbps */
+
+	/* phy stats */
+	uint32 rxbadplcp;
+	uint32 rxcrsglitch;
+	uint32 bphy_rxcrsglitch;
+	uint32 bphy_badplcp;
+
 } wl_delta_stats_t;
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
 
@@ -3563,11 +3579,11 @@ typedef struct tdls_iovar {
 } tdls_iovar_t;
 
 /* modes */
-#define TDLS_WFD_IE_TX 0
-#define TDLS_WFD_IE_RX 1
+#define TDLS_WFD_IE_TX 			0
+#define TDLS_WFD_IE_RX 			1
 #define TDLS_WFD_PROBE_IE_TX	2
 #define TDLS_WFD_PROBE_IE_RX	3
-#define TDLS_WFD_IE_SIZE 512
+#define TDLS_WFD_IE_SIZE 		512
 /* structure for tdls wfd ie */
 typedef struct tdls_wfd_ie_iovar {
 	struct ether_addr ea;		/* Station address */
@@ -3907,7 +3923,7 @@ struct nd_ol_stats_t {
  */
 typedef struct wl_keep_alive_pkt {
 	uint32	period_msec;	/* Retransmission period (0 to disable packet re-transmits) */
-	uint16	len_bytes;	/* Size of packet to transmit (0 to disable packet re-transmits) */
+	uint16	len_bytes;	/* Size of packet to transmit (0 for null packet) */
 	uint8	data[1];	/* Variable length packet to transmit.  Contents should include
 				 * entire ethernet packet (enet header, IP header, UDP header,
 				 * and UDP payload) in network byte order.
@@ -4063,6 +4079,9 @@ typedef struct wl_sslpnphy_percal_debug_data {
 	int32 volt_winner;
 } wl_sslpnphy_percal_debug_data_t;
 
+/*
+ * WOWL capability/override settings
+ */
 #define WL_WOWL_MAGIC       (1 << 0)    /* Wakeup on Magic packet */
 #define WL_WOWL_NET         (1 << 1)    /* Wakeup on Netpattern */
 #define WL_WOWL_DIS         (1 << 2)    /* Wakeup on loss-of-link due to Disassoc/Deauth */
@@ -4198,6 +4217,16 @@ typedef struct {
 	struct ether_addr ea[WL_IOV_MAC_PARAM_LEN];
 } wl_iov_mac_params_t;
 
+/* This is extra info that follows wl_iov_mac_params_t */
+typedef struct {
+	uint32 addr_info[WL_IOV_MAC_PARAM_LEN];
+} wl_iov_mac_extra_params_t;
+
+/* Combined structure */
+typedef struct {
+	wl_iov_mac_params_t params;
+	wl_iov_mac_extra_params_t extra_params;
+} wl_iov_mac_full_params_t;
 
 /* Parameter block for PKTQ_LOG statistics */
 typedef struct {
@@ -4219,35 +4248,7 @@ typedef struct {
 	uint32 busy;           /* packets droped because of hardware/transmission error */
 	uint32 retry;          /* packets re-sent because they were not received */
 	uint32 ps_retry;       /* packets retried again prior to moving power save mode */
-	uint32 retry_drop;     /* packets finally dropped after retry limit */
-	uint32 max_avail;      /* the high-water mark of the queue capacity for packets -
-	                          goes to zero as queue fills
-	                       */
-	uint32 max_used;       /* the high-water mark of the queue utilisation for packets -
-	                          increases with use ('inverse' of max_avail)
-	                       */
-	uint32 queue_capacity; /* the maximum capacity of the queue */
-} pktq_log_counters_v01_t;
-
-typedef struct {
-	uint32 requested;      /* packets requested to be stored */
-	uint32 stored;         /* packets stored */
-	uint32 saved;          /* packets saved,
-	                          because a lowest priority queue has given away one packet
-	                       */
-	uint32 selfsaved;      /* packets saved,
-	                          because an older packet from the same queue has been dropped
-	                       */
-	uint32 full_dropped;   /* packets dropped,
-	                          because pktq is full with higher precedence packets
-	                       */
-	uint32 dropped;        /* packets dropped because pktq per that precedence is full */
-	uint32 sacrificed;     /* packets dropped,
-	                          in order to save one from a queue of a highest priority
-	                       */
-	uint32 busy;           /* packets droped because of hardware/transmission error */
-	uint32 retry;          /* packets re-sent because they were not received */
-	uint32 ps_retry;       /* packets retried again prior to moving power save mode */
+	uint32 suppress;       /* suppressed packet count */
 	uint32 retry_drop;     /* packets finally dropped after retry limit */
 	uint32 max_avail;      /* the high-water mark of the queue capacity for packets -
 	                          goes to zero as queue fills
@@ -4258,31 +4259,28 @@ typedef struct {
 	uint32 queue_capacity; /* the maximum capacity of the queue */
 	uint32 rtsfail;        /* count of rts attempts that failed to receive cts */
 	uint32 acked;          /* count of packets sent (acked) successfully */
-} pktq_log_counters_v02_t;
+	uint32 txrate_succ;    /* running total of phy rate of packets sent successfully */
+	uint32 txrate_main;    /* running total of phy 'main' rate */
+	uint32 throughput;     /* actual data transferred successfully */
+	uint32 time_delta;     /* time difference since last pktq_stats */
+} pktq_log_counters_v04_t;
 
 #define sacrified sacrificed
 
 typedef struct {
 	uint8                num_prec[WL_IOV_MAC_PARAM_LEN];
-	pktq_log_counters_v01_t  counters[WL_IOV_MAC_PARAM_LEN][WL_IOV_PKTQ_LOG_PRECS];
+	pktq_log_counters_v04_t  counters[WL_IOV_MAC_PARAM_LEN][WL_IOV_PKTQ_LOG_PRECS];
+	uint32               counter_info[WL_IOV_MAC_PARAM_LEN];
+	uint32               pspretend_time_delta[WL_IOV_MAC_PARAM_LEN];
 	char                 headings[1];
-} pktq_log_format_v01_t;
-
-typedef struct {
-	uint8                num_prec[WL_IOV_MAC_PARAM_LEN];
-	pktq_log_counters_v02_t  counters[WL_IOV_MAC_PARAM_LEN][WL_IOV_PKTQ_LOG_PRECS];
-	uint32               throughput[WL_IOV_MAC_PARAM_LEN][WL_IOV_PKTQ_LOG_PRECS];
-	uint32               time_delta;
-	char                 headings[1];
-} pktq_log_format_v02_t;
+} pktq_log_format_v04_t;
 
 
 typedef struct {
 	uint32               version;
 	wl_iov_mac_params_t  params;
 	union {
-		pktq_log_format_v01_t v01;
-		pktq_log_format_v02_t v02;
+		pktq_log_format_v04_t v04;
 	} pktq_log;
 } wl_iov_pktq_log_t;
 
@@ -4600,12 +4598,14 @@ typedef struct assertlog_results {
 
 /* define for apcs reason code */
 #define APCS_INIT		0
-#define APCS_IOCTL 		1
-#define APCS_CHANIM 	2
+#define APCS_IOCTL		1
+#define APCS_CHANIM		2
 #define APCS_CSTIMER	3
 #define APCS_BTA		4
 #define APCS_TXDLY		5
 #define APCS_NONACSD	6
+#define APCS_DFS_REENTRY	7
+#define APCS_MAX		8
 
 /* number of ACS record entries */
 #define CHANIM_ACS_RECORD			10
@@ -5256,4 +5256,55 @@ typedef struct statreq {
 	uint8 group_id;
 	uint16 reps;
 } statreq_t;
+
+typedef struct scb_intfer_smpl {
+	uint32 timestamp;
+	uint16 txnoack;
+	uint16 osrate;
+	uint16 osratetcp;
+	uint16 dmarate;
+	uint16 retryrate;
+	uint16 rxcrsglitch;
+	uint16 txbadrate;
+	/* we may need to include all the ucode cca stats */
+} scb_intfer_smpl_t;
+
+#define WLINTFER_STATS_NSMPLS	32
+#define INTFER_VERSION	1
+
+typedef struct intfer_params {
+	uint16 version;
+	uint16 smplperiod;
+	uint16 smplcnt;
+	uint16 smplwin;
+	uint16 dmarate_thld;
+	uint16 retry_thld;
+	uint16 glitch_thld;
+	uint16 txbad_thld;
+	uint32 txnoack_thld;
+} intfer_params_t;
+
+typedef struct intfer_event {
+	uint32 version;
+	uint32 status;
+	scb_intfer_smpl_t stats[WLINTFER_STATS_NSMPLS];
+	scb_intfer_smpl_t hist_stats[WLINTFER_STATS_NSMPLS];
+} intfer_event_t;
+
+typedef struct wlc_dwds_config {
+	uint32		enable;
+	uint32		mode; /* STA/AP interface */
+	struct ether_addr ea;
+} wlc_dwds_config_t;
+
+typedef enum wl_stamon_cmd_type {
+	STAMON_CFG_CMD_DEL = 0,
+	STAMON_CFG_CMD_ADD = 1,
+} wl_stamon_cfg_cmd_type_t;
+
+typedef struct wlc_stamon_config {
+	wl_stamon_cfg_cmd_type_t cmd; /* 0 - delete, 1 - add */
+	struct ether_addr ea;
+} wlc_stamon_config_t;
+
 #endif /* _wlioctl_h_ */

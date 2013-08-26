@@ -15,7 +15,7 @@
  *
  * Fundamental types and constants relating to 802.11
  *
- * $Id: 802.11.h 365823 2012-10-31 04:24:30Z $
+ * $Id: 802.11.h 383145 2013-02-05 20:44:56Z $
  */
 
 #ifndef _802_11_H_
@@ -454,6 +454,10 @@ BWL_PRE_PACKED_STRUCT struct dot11_vht_transmit_power_envelope {
 } BWL_POST_PACKED_STRUCT;
 typedef struct dot11_vht_transmit_power_envelope dot11_vht_transmit_power_envelope_ie_t;
 
+/* vht transmit power envelope IE length depends on channel width */
+#define DOT11_VHT_TRANSMIT_PWR_ENVELOPE_IE_LEN_40MHZ	1
+#define DOT11_VHT_TRANSMIT_PWR_ENVELOPE_IE_LEN_80MHZ	2
+#define DOT11_VHT_TRANSMIT_PWR_ENVELOPE_IE_LEN_160MHZ	3
 
 BWL_PRE_PACKED_STRUCT struct dot11_obss_coex {
 	uint8	id;
@@ -1293,18 +1297,20 @@ typedef struct ti_ie ti_ie_t;
 /* Extended capabilities IE bitfields */
 /* 20/40 BSS Coexistence Management support bit position */
 #define DOT11_EXT_CAP_OBSS_COEX_MGMT		0
+/* Extended Channel Switching support bit position */
+#define DOT11_EXT_CAP_EXT_CHAN_SWITCHING	2
 /* scheduled PSMP support bit position */
 #define DOT11_EXT_CAP_SPSMP					6
 /*  Flexible Multicast Service */
-#define DOT11_EXT_CAP_FMS				11
+#define DOT11_EXT_CAP_FMS			11
 /* proxy ARP service support bit position */
-#define DOT11_EXT_CAP_PROXY_ARP				12
+#define DOT11_EXT_CAP_PROXY_ARP			12
 /* Traffic Filter Service */
-#define DOT11_EXT_CAP_TFS				16
+#define DOT11_EXT_CAP_TFS			16
 /* WNM-Sleep Mode */
-#define DOT11_EXT_CAP_WNM_SLEEP				17
+#define DOT11_EXT_CAP_WNM_SLEEP			17
 /* TIM Broadcast service */
-#define DOT11_EXT_CAP_TIM_BCAST				18
+#define DOT11_EXT_CAP_TIM_BCAST			18
 /* BSS Transition Management support bit position */
 #define DOT11_EXT_CAP_BSS_TRANSITION_MGMT	19
 /* Direct Multicast Service */
@@ -1376,7 +1382,7 @@ typedef struct dot11_oper_mode_notif_ie dot11_oper_mode_notif_ie_t;
 #define DOT11_ACTION_CAT_OFF		0	/* category offset */
 #define DOT11_ACTION_ACT_OFF		1	/* action offset */
 
-/* Action Category field (sec 7.3.1.11) */
+/* Action Category field (sec 8.4.1.11) */
 #define DOT11_ACTION_CAT_ERR_MASK	0x80	/* category error mask */
 #define DOT11_ACTION_CAT_MASK		0x7F	/* category mask */
 #define DOT11_ACTION_CAT_SPECT_MNG	0	/* category spectrum management */
@@ -1392,7 +1398,7 @@ typedef struct dot11_oper_mode_notif_ie dot11_oper_mode_notif_ie_t;
 #define DOT11_ACTION_CAT_WNM		10	/* category for WNM */
 #define DOT11_ACTION_CAT_UWNM		11	/* category for Unprotected WNM */
 #define DOT11_ACTION_NOTIFICATION	17
-#define DOT11_ACTION_CAT_VHT		21	/* 802.11ac D3.0 - 8.4.1.11 */
+#define DOT11_ACTION_CAT_VHT		21	/* VHT action */
 #define DOT11_ACTION_CAT_VSP		126	/* protected vendor specific */
 #define DOT11_ACTION_CAT_VS		127	/* category Vendor Specific */
 
@@ -1402,7 +1408,6 @@ typedef struct dot11_oper_mode_notif_ie dot11_oper_mode_notif_ie_t;
 #define DOT11_SM_ACTION_TPC_REQ		2	/* d11 action TPC request */
 #define DOT11_SM_ACTION_TPC_REP		3	/* d11 action TPC response */
 #define DOT11_SM_ACTION_CHANNEL_SWITCH	4	/* d11 action channel switch */
-#define DOT11_SM_ACTION_EXT_CSA		5	/* d11 extened CSA for 11n */
 
 /* HT action ids */
 #define DOT11_ACTION_ID_HT_CH_WIDTH	0	/* notify channel width action id */
@@ -1451,13 +1456,13 @@ typedef struct dot11_oper_mode_notif_ie dot11_oper_mode_notif_ie_t;
 #define DOT11_WNM_ACTION_BSS_TRANS_QURY		6
 #define DOT11_WNM_ACTION_BSS_TRANS_REQ		7
 #define DOT11_WNM_ACTION_BSS_TRANS_RESP		8
-#define DOT11_WNM_ACTION_FMS_REQ			9
-#define DOT11_WNM_ACTION_FMS_RESP			10
+#define DOT11_WNM_ACTION_FMS_REQ		9
+#define DOT11_WNM_ACTION_FMS_RESP		10
 #define DOT11_WNM_ACTION_COL_INTRFRNCE_REQ	11
 #define DOT11_WNM_ACTION_COL_INTRFRNCE_REP	12
-#define DOT11_WNM_ACTION_TFS_REQ			13
-#define DOT11_WNM_ACTION_TFS_RESP			14
-#define DOT11_WNM_ACTION_TFS_NOTIFY			15
+#define DOT11_WNM_ACTION_TFS_REQ		13
+#define DOT11_WNM_ACTION_TFS_RESP		14
+#define DOT11_WNM_ACTION_TFS_NOTIFY		15
 #define DOT11_WNM_ACTION_WNM_SLEEP_REQ		16
 #define DOT11_WNM_ACTION_WNM_SLEEP_RESP		17
 #define DOT11_WNM_ACTION_TIM_BCAST_REQ		18
@@ -1465,8 +1470,8 @@ typedef struct dot11_oper_mode_notif_ie dot11_oper_mode_notif_ie_t;
 #define DOT11_WNM_ACTION_QOS_TRFC_CAP_UPD	20
 #define DOT11_WNM_ACTION_CHAN_USAGE_REQ		21
 #define DOT11_WNM_ACTION_CHAN_USAGE_RESP	22
-#define DOT11_WNM_ACTION_DMS_REQ			23
-#define DOT11_WNM_ACTION_DMS_RESP			24
+#define DOT11_WNM_ACTION_DMS_REQ		23
+#define DOT11_WNM_ACTION_DMS_RESP		24
 #define DOT11_WNM_ACTION_TMNG_MEASUR_REQ	25
 #define DOT11_WNM_ACTION_NOTFCTN_REQ		26
 #define DOT11_WNM_ACTION_NOTFCTN_RES		27
@@ -1645,6 +1650,19 @@ BWL_PRE_PACKED_STRUCT struct dot11_tim_bcast_resp {
 } BWL_POST_PACKED_STRUCT;
 typedef struct dot11_tim_bcast_resp dot11_tim_bcast_resp_t;
 #define DOT11_TIM_BCAST_RESP_LEN		3	/* Fixed length */
+
+/* TIM element */
+BWL_PRE_PACKED_STRUCT struct dot11_tim_ie {
+	uint8 id;			/* 5, DOT11_MNG_TIM_ID	 */
+	uint8 len;			/* 4 - 255 */
+	uint8 dtim_count;		/* DTIM decrementing counter */
+	uint8 dtim_period;		/* DTIM period */
+	uint8 bitmap_control;		/* AID 0 + bitmap offset */
+	uint8 pvb[1];			/* Partial Virtual Bitmap, variable length */
+} BWL_POST_PACKED_STRUCT;
+typedef struct dot11_tim_ie dot11_tim_ie_t;
+#define DOT11_TIM_IE_FIXED_LEN	3	/* Fixed length, without id and len */
+#define DOT11_TIM_IE_FIXED_TOTAL_LEN	5	/* Fixed length, with id and len */
 
 /* TIM Broadcast frame header */
 BWL_PRE_PACKED_STRUCT struct dot11_tim_bcast {
@@ -2374,8 +2392,8 @@ typedef struct dot11_rmreq_pause_time dot11_rmreq_pause_time_t;
 
 /* Neighbor measurement report */
 BWL_PRE_PACKED_STRUCT struct dot11_rmrep_nbr {
-	struct ether_addr	bssid;
-	uint32	bssid_info;
+	struct ether_addr bssid;
+	uint32 bssid_info;
 	uint8 reg;
 	uint8 channel;
 	uint8 phytype;
@@ -2556,6 +2574,8 @@ typedef struct d11cnt {
  * #define HT_CAP_IE_TYPE	51
  * #define HT_ADD_IE_TYPE	52
  * #define BRCM_EXTCH_IE_TYPE	53
+ * #define MEMBER_OF_BRCM_PROP_IE_TYPE	54
+ * #define BRCM_RELMACST_IE_TYPE	55
  */
 
 /* Following is the generic structure for brcm_prop_ie (uses BRCM_PROP_OUI).
@@ -3015,7 +3035,7 @@ typedef enum vht_op_chan_width {
  * Bits:4-7	Reserved for future use
  *
  */
-#define BRCM_VHT_FEATURES_OUITYPE	0x4
+#define VHT_FEATURES_IE_TYPE	0x4
 BWL_PRE_PACKED_STRUCT struct vht_features_ie_hdr {
 	uint8 oui[3];		/* Proprietary OUI, BRCM_PROP_OUI */
 	uint8 type;		/* type of this IE = 4 */

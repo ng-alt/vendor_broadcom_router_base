@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011, Broadcom Corporation
+ * Copyright (C) 2012, Broadcom Corporation
  * All Rights Reserved.
  * 
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
@@ -7,7 +7,7 @@
  * or duplicated in any form, in whole or in part, without the prior
  * written permission of Broadcom Corporation.
  *
- * $Id: igsc.h 340526 2012-06-22 14:54:20Z $
+ * $Id: igsc.h 387069 2013-02-22 23:42:22Z $
  */
 
 #ifndef _IGSC_H_
@@ -24,16 +24,16 @@
 #define IGMPV2_HOST_MEMBERSHIP_REPORT           0x12
 #define IGMPV2_HOST_NEW_MEMBERSHIP_REPORT       0x16
 #define IGMPV2_LEAVE_GROUP_MESSAGE              0x17
-#define IGMPV3_HOST_MEMBERSHIP_REPORT           0x22 /*  add by aspen Bai, 02/25//2008 */
+#define IGMPV3_HOST_MEMBERSHIP_REPORT           0x22 /* Foxconn add by aspen Bai, 02/25//2008 */
 
-/*  modified by zacker, 06/01/2009
+/* Foxconn modified by zacker, 06/01/2009
  * igsc_sdb_timer() will send igmp query 3 times and the query timeout is
  * 2*IGMPV2_MAXRSP_TIME.
  * To match the 260s timeout in proxy,we set IGMPV2_QUERY_INTV to 95s here.
  * 2*IGMPV2_QUERY_INTV + IGMPV2_MAXRSP_TIME + 3*2*IGMPV2_MAXRSP_TIME = 260s
  * #define IGMPV2_QUERY_INTV                    130000
  */
-#define IGMPV2_QUERY_INTV                       95000
+#define IGMPV2_QUERY_INTV                       90000 //95000 /* for timing issue - R7000 case, but I think all project should be the saem. */
 #define IGMPV2_MAXRSP_TIME                      10000
 #define IGMPV2_ROBUSTNESS_VAR                   2
 #define IGMPV2_GRP_MEM_INTV                     ((IGMPV2_ROBUSTNESS_VAR * \
@@ -94,7 +94,6 @@ typedef struct mc_grp_spl
 	uint32	mask;
 } mc_grp_spl_t;
 
-#ifdef SUPPORT_IGMP_V3
 #define IGMPV3_HOST_MEMBERSHIP_REPORT	0x22	/* V3 version of 0x11 */
 
 #define IGMPV3_MODE_IS_INCLUDE		1
@@ -121,7 +120,6 @@ typedef struct igmpv3_group {
 } igmpv3_group_t;
 
 #define IGMPV3_SRC_ADDR_LEN	4
-#endif /* SUPPORT_IGMP_V3 */
 
 
 #endif /* _IGSC_H_ */

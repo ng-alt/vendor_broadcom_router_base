@@ -1,7 +1,7 @@
 /*
  * RoboSwitch setup functions
  *
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmrobo.h 341899 2012-06-29 04:06:38Z $
+ * $Id: bcmrobo.h 363505 2012-10-18 01:58:09Z $
  */
 
 #ifndef _bcm_robo_h_
@@ -38,25 +38,43 @@
 #define DEVID53010	0x53010	/* 53010 */
 #define DEVID53011	0x53011	/* 53011 */
 #define DEVID53012	0x53012	/* 53012 */
+#define DEVID53018	0x53018	/* 53018 */
 #define DEVID53019	0x53019	/* 53019 */
 #define ROBO_IS_BCM5301X(id) ((id) == DEVID53010 || (id) == DEVID53011 || (id) == DEVID53012 || \
-(id) == DEVID53019)
-/*  added start, zacker, 10/15/2010 */
+(id) == DEVID53018 || (id) == DEVID53019)
+/* foxconn added start, zacker, 10/15/2010 */
 #define LAN_VLAN_ENTRY_IDX          (1)//LAN is VLAN ID 1
 #define WAN_VLAN_ENTRY_IDX          (2)//WAN is VLAN ID 2
 #define IPTV_VLAN_ENTRY_IDX         (3)//IPTV is VLAN ID 3
 #define LAN_VLAN_ENTRY_IDX_VAL      (0x30 + LAN_VLAN_ENTRY_IDX)//'1'
 #define WAN_VLAN_ENTRY_IDX_VAL      (0x30 + WAN_VLAN_ENTRY_IDX)//'2'
 #define IPTV_VLAN_ENTRY_IDX_VAL     (0x30 + IPTV_VLAN_ENTRY_IDX)//'3'
+#if defined(R7000)
+#define ROBO_LAN_PORTMAP            (0x1E)
+#define ROBO_WAN_PORTMAP            (0x1)
+#define ROBO_LAN_PORT_IDX_START     (1)
+#define ROBO_LAN_PORT_IDX_END       (4)
+#define ROBO_WAN_PORT               (0)
+#else
 #define ROBO_LAN_PORTMAP            (0x0F)
 #define ROBO_WAN_PORTMAP            (0x10)
 #define ROBO_LAN_PORT_IDX_START     (0)
 #define ROBO_LAN_PORT_IDX_END       (3)
 #define ROBO_WAN_PORT               (4)
+
+#endif
 #define ROBO_INVALID_PORT_SPEED     (0x03)
+
+/*foxconn Han edited start, 05/17/2013 for R7000 don't have to do this*/
+#if (defined R7000)
+#define ROBO_PORT_TO_LABEL_PORT(a)  (5-(a))
+#define LABEL_PORT_TO_ROBO_PORT(a)  (5-(a))
+#else
+/*foxconn Han edited end, 05/17/2013 for R7000 don't have to do this*/
 #define ROBO_PORT_TO_LABEL_PORT(a)  ((a) + 1)
-#define LABEL_PORT_TO_ROBO_PORT(a)  ((a) - 1) /*  added, zacker, 12/13/2011 */
-/*  added end, zacker, 10/15/2010 */
+#define LABEL_PORT_TO_ROBO_PORT(a)  ((a) - 1) /* foxconn added, zacker, 12/13/2011 */
+#endif /*defined R7000*/
+/* foxconn added end, zacker, 10/15/2010 */
 
 /* Power save duty cycle times */
 #define MAX_NO_PHYS		5
@@ -154,7 +172,9 @@ struct robo_info_s {
 	uint16	prev_status;		/* link status of switch ports */
 	uint32	pwrsave_mode_manual; 	/* bitmap of ports in manual power save */
 	uint32	pwrsave_mode_auto; 	/* bitmap of ports in auto power save mode */
-	uint8	pwrsave_phys; 		/* Phys that can be put into power save mode */
+	uint32	pwrsave_sleep_time;	/* sleep time for manual power save mode */
+	uint32	pwrsave_wake_time;	/* wakeup time for manual power save mode */
+	uint8	pwrsave_phys;		/* Phys that can be put into power save mode */
 	uint8	pwrsave_mode_phys[MAX_NO_PHYS];         /* Power save mode on the switch */
 	bool	eee_status;
 #ifdef PLC
@@ -162,7 +182,7 @@ struct robo_info_s {
 	bool	plc_hw;			/* PLC chip */
 #endif /* PLC */
 };
-/*  add start by Lewis Min, 04/02/2008, for igmp snooping */
+/* Foxconn add start by Lewis Min, 04/02/2008, for igmp snooping */
 #ifdef __CONFIG_IGMP_SNOOPING__
 struct igmp_snooping_table_s {
 	uint8   mh_mac[6];
@@ -170,7 +190,7 @@ struct igmp_snooping_table_s {
 };
 typedef struct igmp_snooping_table_s igmp_snooping_table_t;
 #endif
-/*Add end by  lewis min for snooping function ,04/01/2008*/
+/*Add end by foxconn lewis min for snooping function ,04/01/2008*/
 
 /* Power Save mode related functions */
 extern int32 robo_power_save_mode_get(robo_info_t *robo, int32 phy);
@@ -188,13 +208,13 @@ extern int bcm_robo_enable_switch(robo_info_t *robo);
 
 extern void robo_watchdog(robo_info_t *robo);
 extern void robo_eee_advertise_init(robo_info_t *robo);
-/*  added start, zacker, 01/13/2012, @iptv_igmp */
+/* foxconn added start, zacker, 01/13/2012, @iptv_igmp */
 #if defined(CONFIG_RUSSIA_IPTV)
 extern void set_iptv_ports(robo_info_t *robo);
 extern uint16 get_iptv_ports(void);
 extern int is_iptv_port(int port);
 #endif
-/*  added end, zacker, 01/13/2012, @iptv_igmp */
+/* foxconn added end, zacker, 01/13/2012, @iptv_igmp */
 
 #ifdef PLC
 extern void robo_plc_hw_init(robo_info_t *robo);

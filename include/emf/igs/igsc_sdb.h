@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011, Broadcom Corporation
+ * Copyright (C) 2012, Broadcom Corporation
  * All Rights Reserved.
  * 
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
@@ -62,7 +62,7 @@ typedef struct igsc_mh
 /*
  * Prototypes
  */
-/* modify start by Hank 08/10/2012 */
+/*Foxconn modify start by Hank 08/10/2012 */
 /*change function definition when __CONFIG_IGMP_SNOOPING__ enable*/
 #ifdef __CONFIG_IGMP_SNOOPING__
 int32 igsc_sdb_member_add(igsc_info_t *igsc_info, void *ifp, uint32 mgrp_ip,
@@ -75,7 +75,7 @@ int32 igsc_sdb_member_add(igsc_info_t *igsc_info, void *ifp, uint32 mgrp_ip,
 int32 igsc_sdb_member_del(igsc_info_t *igsc_info, void *ifp, uint32 mgrp_ip,
                           uint32 mh_ip);
 #endif
-/* modify end by Hank 08/10/2012 */
+/*Foxconn modify end by Hank 08/10/2012 */
 void igsc_sdb_init(igsc_info_t *igsc_info);
 
 #if defined(EMF_MCAST_IN_UCAST)

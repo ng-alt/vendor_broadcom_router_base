@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011, Broadcom Corporation
+ * Copyright (C) 2012, Broadcom Corporation
  * All Rights Reserved.
  * 
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
@@ -135,10 +135,6 @@ extern void igsc_sdb_clear(struct igsc_info *igsc_info);
  * Description: This function is called to obtain the IGSDB entry list.
  */
 extern int32 igsc_sdb_list(struct igsc_info *igsc_info, igs_cfg_sdb_list_t *list, uint32 size);
-
-#ifdef __CONFIG_IGMP_SNOOPING__
-extern int32 igsc_snoop_list(struct igsc_info *igsc_info, igs_cfg_snoop_list_t *list, uint32 size);
-#endif
 
 /*
  * Description: This function is called from the OS Specific layer when

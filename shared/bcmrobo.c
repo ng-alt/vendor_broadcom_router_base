@@ -1,7 +1,7 @@
 /*
  * Broadcom 53xx RoboSwitch device driver.
  *
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmrobo.c 341899 2012-06-29 04:06:38Z $
+ * $Id: bcmrobo.c 363505 2012-10-18 01:58:09Z $
  */
 
 
@@ -72,7 +72,7 @@
 #define PAGE_STATUS	0x01	/* Status page */
 #define PAGE_MMR	0x02	/* 5397 Management/Mirroring page */
 #define PAGE_VTBL	0x05	/* ARL/VLAN Table access page */
-#define PAGE_QOS    0x30    /* QoS page,  added pling 01/31/2007 */
+#define PAGE_QOS    0x30    /* QoS page, Foxconn added pling 01/31/2007 */
 #define PAGE_VLAN	0x34	/* VLAN page */
 
 /* Control page registers */
@@ -104,8 +104,8 @@
 
 #define REG_DEVICE_ID	0x30	/* 539x Device id: */
 
-/*  added start pling 12/04/2006 */
-/*  modify by aspen Bai, 09/02/2008, for 53115S Giga switch on bcm4718 */
+/* Foxconn added start pling 12/04/2006 */
+/* Foxconn modify by aspen Bai, 09/02/2008, for 53115S Giga switch on bcm4718 */
 /* Status page registers */
 #if (defined BCM4716) || (defined BCM5356) || (defined BCM5325E)
 /* 5325E & 5325F */
@@ -118,14 +118,14 @@
 #define REG_SPEED_SUM   0x04    /* Port speed summary register, 32-bit */
 #define REG_DUPLEX_SUM  0x08    /* Duplex status summary register, 16-bit */
 #endif
-/*  added end pling 12/04/2006 */
+/* Foxconn added end pling 12/04/2006 */
 
-/*  added start pling 01/31/2007 */
+/* Foxconn added start pling 01/31/2007 */
 #define REG_QOS_CTRL        0x00    /* QoS Control Register */
 #define REG_QOS_PRIO_CTRL   0x02    /* QoS Priority Control Register */
 #define REG_QOS_DSCP_ENABLE 0x06    /* QoS DiffServ Enable Register */
 #define REG_QOS_DSCP_PRIO   0x30    /* QoS DiffServ Priority Register */
-/*  added end pling 01/31/2007 */
+/* Foxconn added end pling 01/31/2007 */
 
 /* VLAN page registers */
 #define REG_VLAN_CTRL0	0x00	/* VLAN Control 0 register */
@@ -181,12 +181,12 @@
 #define MOSI_SETUP_TIME	1	/* input setup duration - 1us */
 #define SS_SETUP_TIME	1 	/* select setup duration - 1us */
 
-/*  add start by Lewis Min, 04/02/2008, for igmp snooping */
+/* Foxconn add start by Lewis Min, 04/02/2008, for igmp snooping */
 #ifdef __CONFIG_IGMP_SNOOPING__
 igmp_snooping_table_t snooping_table[2];
 int is_reg_snooping_enable = 0;
 #endif
-/*  add end by Lewis Min, 04/02/2008, for igmp snooping */
+/* Foxconn add end by Lewis Min, 04/02/2008, for igmp snooping */
 
 #if defined(INCLUDE_QOS) || defined(__CONFIG_IGMP_SNOOPING__)
 int is_reg_mgmt_mode_enable = 0;
@@ -195,9 +195,9 @@ int is_reg_mgmt_mode_enable = 0;
 /* misc. constants */
 #define SPI_MAX_RETRY	100
 
-static robo_info_t *robo_ptr = NULL;    /*  added pling 08/10/2006 */
+static robo_info_t *robo_ptr = NULL;    /* Foxconn added pling 08/10/2006 */
 
-/*  added start pling 11/23/2010 */
+/* Foxconn added start pling 11/23/2010 */
 /* make this global and export it, for 'et_bridge' module to use 
  * (Needed by WNR3500L Samknows) */
 void* get_robo_ptr(void)
@@ -206,9 +206,9 @@ void* get_robo_ptr(void)
 }
 
 //EXPORT_SYMBOL(get_robo_ptr);
-/*  added end pling 11/23/2010 */
+/* Foxconn added end pling 11/23/2010 */
 
-/*  added start, zacker, 01/13/2012, @iptv_igmp */
+/* foxconn added start, zacker, 01/13/2012, @iptv_igmp */
 #if defined(CONFIG_RUSSIA_IPTV)
 static uint16 iptv_ports = 0x00;
 void set_iptv_ports(robo_info_t *robo)
@@ -256,7 +256,7 @@ int is_iptv_port(int port)
     return 0;
 }
 #endif
-/*  modified start, zacker, 01/13/2012, @iptv_igmp */
+/* foxconn modified start, zacker, 01/13/2012, @iptv_igmp */
 
 /* Enable GPIO access to the chip */
 static void
@@ -989,7 +989,7 @@ bcm_robo_attach(si_t *sih, void *h, char *vars, miird_f miird, miiwr_f miiwr)
 		bcm_mdelay(5);
 	}
 
-    /*  modified start pling 12/05/2006 */
+    /* Foxconn modified start pling 12/05/2006 */
     /* Don't reset the switch to avoid unncessary link down/link up */
 	/* Trigger external reset by nvram variable existance */
 #if 0
@@ -997,7 +997,7 @@ bcm_robo_attach(si_t *sih, void *h, char *vars, miird_f miird, miiwr_f miiwr)
 	    GPIO_PIN_NOTDEFINED) {
 #endif
     if (0) {
-    /*  modified end pling 12/05/2006 */
+    /* Foxconn modified end pling 12/05/2006 */
 		/*
 		 * Reset sequence: RESET low(50ms)->high(20ms)
 		 *
@@ -1184,6 +1184,12 @@ bcm_robo_attach(si_t *sih, void *h, char *vars, miird_f miird, miiwr_f miiwr)
 	 * set the default value in the beginning
 	 */
 	robo->pwrsave_mode_manual = getintvar(robo->vars, "switch_mode_manual");
+	robo->pwrsave_sleep_time = getintvar(robo->vars, "switch_pwrsave_sleep");
+	if (robo->pwrsave_sleep_time == 0)
+		robo->pwrsave_sleep_time = PWRSAVE_SLEEP_TIME;
+	robo->pwrsave_wake_time = getintvar(robo->vars, "switch_pwrsave_wake");
+	if (robo->pwrsave_wake_time == 0)
+		robo->pwrsave_wake_time = PWRSAVE_WAKE_TIME;
 	robo->pwrsave_mode_auto = getintvar(robo->vars, "switch_mode_auto");
 
 	/* Determining what all phys need to be included in
@@ -1209,10 +1215,11 @@ bcm_robo_attach(si_t *sih, void *h, char *vars, miird_f miird, miiwr_f miiwr)
 	/* See if one of the ports is connected to plc chipset */
 	robo->plc_hw = (getvar(vars, "plc_vifs") != NULL);
 #endif /* PLC */
-    /*  added start pling 08/10/2006 */
+
+    /* Foxconn added start pling 08/10/2006 */
     /* Store pointer to robo */
     robo_ptr = robo;
-    /*  added end pling 08/10/2006 */
+    /* Foxconn added end pling 08/10/2006 */
 
 	return robo;
 
@@ -1705,13 +1712,13 @@ bcm_robo_enable_switch(robo_info_t *robo)
 	if (robo->ops->enable_mgmtif)
 		robo->ops->enable_mgmtif(robo);
 
-	/*  added start, zacker, 01/13/2012, @iptv_igmp */
+	/* foxconn added start, zacker, 01/13/2012, @iptv_igmp */
 #if defined(CONFIG_RUSSIA_IPTV)
 	set_iptv_ports(robo);
 #endif
-	/*  added end, zacker, 01/13/2012, @iptv_igmp */
+	/* foxconn added end, zacker, 01/13/2012, @iptv_igmp */
 
-	/*  added start, zacker, 10/22/2008 */
+	/* Foxconn added start, zacker, 10/22/2008 */
 #if defined(__CONFIG_IGMP_SNOOPING__)
 	char *igmp_snooping_flag;
 	igmp_snooping_flag = getvar(robo->vars, "emf_enable");
@@ -1765,14 +1772,14 @@ bcm_robo_enable_switch(robo_info_t *robo)
 			ET_ERROR(("Alex:P:0x34 A:0x1 val8=%x\n",val8));
 
 			/* Set IGMP packet be trap to CPU only.*/
-            /*  wklin removed start, 12/03/2010, fix WNDR4000 IGMP issues */
+            /* foxconn wklin removed start, 12/03/2010, fix WNDR4000 IGMP issues */
 #if 0
 			robo->ops->read_reg(robo, PAGE_MMR, 0x50, &val32, sizeof(val32));
 			val32 |= 0x7E00;
 			robo->ops->write_reg(robo, PAGE_MMR, 0x50, &val32, sizeof(val32));
 			ET_ERROR(("Alex:P:0x2 A:0x50 val32=%x\n",val32));
 #endif
-            /*  wklin removed end, 12/03/2010 */
+            /* foxconn wklin removed end, 12/03/2010 */
 
 			/*Set Multiport address enable */
 			robo->ops->read_reg(robo, 0x4, 0xE, &val16, sizeof(val16));
@@ -1790,7 +1797,7 @@ bcm_robo_enable_switch(robo_info_t *robo)
 #endif
 	}
 #endif
-	/*  added end, zacker, 10/22/2008 */
+	/* Foxconn added end, zacker, 10/22/2008 */
 	/* Switch Mode register (Page 0, Address 0x0B) */
 	robo->ops->read_reg(robo, PAGE_CTRL, REG_CTRL_MODE, &val8, sizeof(val8));
 
@@ -1884,7 +1891,7 @@ bcm_robo_enable_switch(robo_info_t *robo)
 	return ret;
 }
 
-#ifdef __CONFIG_IGMP_SNOOPING__/*  add start by Lewis Min, 04/02/2008, for igmp snooping */
+#ifdef __CONFIG_IGMP_SNOOPING__/* Foxconn add start by Lewis Min, 04/02/2008, for igmp snooping */
 /*
  * Description: This function is called by IGMP Snooper when it wants
  *              to add snooping entry or refresh the entry. 
@@ -2110,7 +2117,7 @@ bcm_robo_snooping_add(uint32 mgrp_ip, int portid)
        mh_mac_tmp[4]=mh_mac[1];
        mh_mac_tmp[5]=mh_mac[0];
 
-       valu16|=0x120; 
+       valu16|=0x120; /* Foxconn Bob modified to make port 5 in multiport vector */
 
         if((0==retVal)||(1==retVal))
         {
@@ -2178,7 +2185,7 @@ bcm_robo_snooping_del(uint32 mgrp_ip, int portid)
        mh_mac_tmp[4]=mh_mac[1];
        mh_mac_tmp[5]=mh_mac[0];
 
-       valu16|=0x120;	
+       valu16|=0x120;	/* Foxconn Bob modified to make port 5 in multiport vector */
 
        if((0==retVal)||(1==retVal))
        {
@@ -2218,7 +2225,8 @@ bcm_robo_snooping_list(igmp_snooping_table_t *pSnoop_entry)
        return ;
 }
 #endif
-/*Add end by  lewis min for snooping function ,04/01/2008*/
+/*Add end by foxconn lewis min for snooping function ,04/01/2008*/
+
 #ifdef BCMDBG
 void
 robo_dump_regs(robo_info_t *robo, struct bcmstrbuf *b)
@@ -2408,6 +2416,10 @@ robo_power_save_mode_clear_manual(robo_info_t *robo, int32 phy)
 		val16 = robo->miird(robo->h, phy, REG_MII_CTRL);
 		val16 &= 0xf7ff;
 		robo->miiwr(robo->h, phy, REG_MII_CTRL, val16);
+	} else if (ROBO_IS_BCM5301X(robo->devid)) {
+		robo->ops->read_reg(robo, 0x10+phy, 0x00, &val16, sizeof(val16));
+		val16 &= 0xf7ff;
+		robo->ops->write_reg(robo, 0x10+phy, 0x00, &val16, sizeof(val16));
 	} else if (robo->devid == DEVID5325) {
 		if ((robo->sih->chip == BCM5357_CHIP_ID) ||
 		    (robo->sih->chip == BCM4749_CHIP_ID) ||
@@ -2585,6 +2597,10 @@ robo_power_save_mode_manual(robo_info_t *robo, int32 phy)
 		 */
 		val16 = robo->miird(robo->h, phy, REG_MII_CTRL);
 		robo->miiwr(robo->h, phy, REG_MII_CTRL, val16 | 0x800);
+	} else if (ROBO_IS_BCM5301X(robo->devid)) {
+		robo->ops->read_reg(robo, 0x10+phy, 0x00, &val16, sizeof(val16));
+		val16 |= 0x800;
+		robo->ops->write_reg(robo, 0x10+phy, 0x00, &val16, sizeof(val16));
 	} else  if (robo->devid == DEVID5325) {
 		if ((robo->sih->chip == BCM5357_CHIP_ID) ||
 		    (robo->sih->chip == BCM4749_CHIP_ID)||
@@ -2851,9 +2867,9 @@ robo_eee_advertise_init(robo_info_t *robo)
 	}
 }
 
-/*  added start pling 08/10/2006 */
+/* Foxconn added start pling 08/10/2006 */
 #ifndef _CFE_
-/*  add start by aspen Bai, 10/09/2008 */
+/* Foxconn add start by aspen Bai, 10/09/2008 */
 /* Add Linux API to read link status */
 int robo_read_link_status(int lan_wan, int *link, int *speed, int *duplex)
 {
@@ -2883,7 +2899,7 @@ int robo_read_link_status(int lan_wan, int *link, int *speed, int *duplex)
         /* Check speed of link "up" ports only */
         for (i = ROBO_LAN_PORT_IDX_START; i <= ROBO_LAN_PORT_IDX_END; i++) {
             port_link  = (reg_link >> i) & 0x01;
-            /*  add start by aspen Bai, 10/09/2008 */
+            /* Foxconn add start by aspen Bai, 10/09/2008 */
 #if (defined BCM4716) || (defined BCM5356) || (defined BCM5325E)
             /* BCM5325E & BCM5325F */
             port_speed = (reg_speed >> i) & 0x01;
@@ -2891,7 +2907,7 @@ int robo_read_link_status(int lan_wan, int *link, int *speed, int *duplex)
             /* BCM53115S */
             port_speed = (reg_speed >> (2*i)) & 0x03;
 #endif
-            /*  add end by aspen Bai, 10/09/2008 */
+            /* Foxconn add end by aspen Bai, 10/09/2008 */
             if (port_link && port_speed > *speed)
                 *speed = port_speed;
         }
@@ -2913,7 +2929,7 @@ int robo_read_link_status(int lan_wan, int *link, int *speed, int *duplex)
 
 	return 0;
 }
-/*  add end by aspen Bai, 10/09/2008 */
+/* Foxconn add end by aspen Bai, 10/09/2008 */
 
 #endif  /* ! _CFE_ */
-/*  added end pling 08/10/2006 */
+/* Foxconn added end pling 08/10/2006 */

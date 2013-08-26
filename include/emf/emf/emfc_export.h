@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011, Broadcom Corporation
+ * Copyright (C) 2012, Broadcom Corporation
  * All Rights Reserved.
  * 
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
@@ -110,7 +110,7 @@ typedef struct emfc_snooper
 	/* Input function called when an IGMP packet is received by
 	 * EMFL.
 	 */
-	/* modify start by Hank 08/10/2012 */
+	/*Foxconn modify start by Hank 08/10/2012 */
 	/*change function definition when __CONFIG_IGMP_SNOOPING__ enable*/
 #ifdef __CONFIG_IGMP_SNOOPING__
 	int32   (*input_fn)(struct emfc_snooper *snooper, void *ifp,
@@ -119,7 +119,7 @@ typedef struct emfc_snooper
 	int32   (*input_fn)(struct emfc_snooper *snooper, void *ifp,
 	                    uint8 *iph, uint8 *igmph, bool rt_port);
 #endif
-	/* modify end by Hank 08/10/2012 */ 
+	/*Foxconn modify end by Hank 08/10/2012 */ 
 
 	/* Function called when EMF is enabled */
 	int32   (*emf_enable_fn)(struct emfc_snooper *snooper);
@@ -141,7 +141,7 @@ typedef struct emfc_wrapper
 {
 	/* Function called to forward frames on a specific interface */
 	int32   (*forward_fn)(void *wrapper, void *p, uint32 mgrp_ip,
-	                    void *txif, bool rt_port);
+	                    void *txif, int rt_port);
 
 	/* Function called to send packet up the stack */
 	void (*sendup_fn)(void *wrapper, void *p);
@@ -202,7 +202,7 @@ extern void emfc_exit(struct emfc_info *emfc);
  *              EMF_TAKEN - EMF has taken the ownership of the packet.
  *              EMF_DROP  - Indicates the packet should be dropped.
  */
-/* modify start by Hank 08/10/2012 */
+/*Foxconn modify start by Hank 08/10/2012 */
 /*change function definition when __CONFIG_IGMP_SNOOPING__ enable*/
 #ifdef __CONFIG_IGMP_SNOOPING__
 extern uint32 emfc_input(struct emfc_info *emfc, void *sdu, void *ifp,
@@ -211,7 +211,7 @@ extern uint32 emfc_input(struct emfc_info *emfc, void *sdu, void *ifp,
 extern uint32 emfc_input(struct emfc_info *emfc, void *sdu, void *ifp,
                          uint8 *iph, bool rt_port);
 #endif
-/* modify end by Hank 08/10/2012 */ 
+/*Foxconn modify end by Hank 08/10/2012 */ 
 /*
  * Description: This function is called to add MFDB entry. Each MFDB entry
  *              contains the multicast group address and list of interfaces

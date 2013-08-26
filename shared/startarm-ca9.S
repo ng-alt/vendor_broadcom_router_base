@@ -4331,17 +4331,28 @@ check_startaddr:
 	b	enable_cache
 
 l2cc_default:
+	ldr	r1,=SI_ENUM_BASE
+	ldr	r2,=CC_CHIPID
+	ldr	r2,[r1,r2]
+	ldr	r1,=CID_ID_MASK
+	and	r2,r2,r1
+	ldr	r1,=0xcf19
+	cmp	r2,r1
+	bge	long_latency
+	ldr	r3,=0x111
+	b	set_latency
+long_latency:
+	ldr	r3,=0x131
+set_latency:
 	ldr	r2,=IHOST_L2C_CACHE_ID
 	mov	r1,#0x0
 	str	r1,[r2,#0x100]			/* control */
-
 	ldr	r1,=0x0
 	str	r1,[r2,#0x108]
-	ldr	r1,=0x111
-	str	r1,[r2,#0x10c]
-
+	str	r3,[r2,#0x10c]
 	mov	r1,#0x1
 	str	r1,[r2,#0x100]			/* control */
+
 	b	szmem
 
 enable_cache:
@@ -4731,16 +4742,16 @@ poll_plllock_done:
 	ldr	r1,=0x87070707
 	str	r1,[r0]
 	ldr	r0,=IHOST_PROC_CLK_CORE0_CLKGATE
-	ldr	r1,=0x00000301
+	ldr	r1,=0x00010303
 	str	r1,[r0]
 	ldr	r0,=IHOST_PROC_CLK_CORE1_CLKGATE
-	str	r1,[r0]
+	ldr	r2,=0x00000303
+	str	r2,[r0]
 	ldr	r0,=IHOST_PROC_CLK_ARM_SWITCH_CLKGATE
 	str	r1,[r0]
 	ldr	r0,=IHOST_PROC_CLK_ARM_PERIPH_CLKGATE
 	str	r1,[r0]
 	ldr	r0,=IHOST_PROC_CLK_APB0_CLKGATE
-	ldr	r1,=0x00000303
 	str	r1,[r0]
 
 	ldr	r0,=IHOST_PROC_CLK_POLICY_CTL

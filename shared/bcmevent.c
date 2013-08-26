@@ -1,7 +1,7 @@
 /*
  * bcmevent read-only data shared by kernel or app layers
  *
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * $Id: bcmevent.c 339265 2012-06-15 23:44:23Z $
+ * $Id: bcmevent.c 390365 2013-03-12 01:48:24Z $
  */
 
 #include <bcm_cfg.h>
@@ -24,7 +24,7 @@
 #include <proto/bcmeth.h>
 #include <proto/bcmevent.h>
 
-#if WLC_E_LAST != 105
+#if WLC_E_LAST != 106
 #error "You need to add an entry to bcmevent_names[] for the new event"
 #endif
 
@@ -135,7 +135,10 @@ const bcmevent_name_t bcmevent_names[] = {
 #endif /* WLPKTDLYSTAT */
 	{ WLC_E_SERVICE_FOUND, "SERVICE_FOUND" },
 	{ WLC_E_GAS_FRAGMENT_RX, "GAS_FRAGMENT_RX" },
-	{ WLC_E_GAS_COMPLETE, "GAS_COMPLETE" }
+	{ WLC_E_GAS_COMPLETE, "GAS_COMPLETE" },
+#ifdef WLINTFERSTAT
+	{ WLC_E_INTFERSTAT_IND, "INTFERSTAT_IND" },
+#endif /* WLPINTFERSTAT */
 };
 
 const int bcmevent_names_size = ARRAYSIZE(bcmevent_names);

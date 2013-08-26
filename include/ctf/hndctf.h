@@ -13,7 +13,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: hndctf.h 371260 2012-11-27 19:42:11Z $
+ * $Id: hndctf.h 385684 2013-02-17 20:32:12Z $
  */
 
 #ifndef _HNDCTF_H_
@@ -80,6 +80,7 @@
 	(CTF_ENAB(ci) ? (ci)->fn.dev_vlan_delete(ci, d, vid) : BCME_OK)
 #define ctf_detach(ci)			if (CTF_ENAB(ci)) (ci)->fn.detach(ci)
 #define ctf_dump(ci, b)			if (CTF_ENAB(ci)) (ci)->fn.dump(ci, b)
+#define ctf_cfg_req_process(ci, c)	if (CTF_ENAB(ci)) (ci)->fn.cfg_req_process(ci, c)
 #define ctf_dev_unregister(ci, d)	if (CTF_ENAB(ci)) (ci)->fn.dev_unregister(ci, d)
 
 #define CTFCNTINCR(s) ((s)++)
@@ -129,6 +130,7 @@ typedef void (*ctf_dev_unregister_t)(ctf_t *ci, void *dev);
 typedef int32 (*ctf_dev_vlan_add_t)(ctf_t *ci, void *dev, uint16 vid, void *vldev);
 typedef int32 (*ctf_dev_vlan_delete_t)(ctf_t *ci, void *dev, uint16 vid);
 typedef void (*ctf_dump_t)(ctf_t *ci, struct bcmstrbuf *b);
+typedef void (*ctf_cfg_req_process_t)(ctf_t *ci, void *arg);
 
 struct ctf_brc_hot {
 	struct ether_addr	ea;	/* Dest address */
@@ -160,11 +162,14 @@ typedef struct ctf_fn {
 	ctf_dev_vlan_add_t	dev_vlan_add;
 	ctf_dev_vlan_delete_t	dev_vlan_delete;
 	ctf_dump_t		dump;
+	ctf_cfg_req_process_t	cfg_req_process;
 } ctf_fn_t;
 
 struct ctf_pub {
 	bool			_ctf;		/* Global CTF enable/disable */
 	ctf_fn_t		fn;		/* Exported functions */
+	void			*nl_sk;		/* Netlink socket */
+	bool			ipc_suspend;	/* Global IPC suspend */
 };
 
 struct ctf_mark;	/* Connection Mark */

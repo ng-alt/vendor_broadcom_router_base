@@ -1,7 +1,7 @@
 /*
  * Broadcom Event  protocol definitions
  *
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,7 @@
  *
  * Dependencies: proto/bcmeth.h
  *
- * $Id: bcmevent.h 339265 2012-06-15 23:44:23Z $
+ * $Id: bcmevent.h 363229 2012-10-16 19:17:22Z $
  *
  */
 
@@ -190,7 +190,8 @@ typedef BWL_PRE_PACKED_STRUCT struct bcm_event {
 #define WLC_E_SERVICE_FOUND		102	/* desired service found */
 #define WLC_E_GAS_FRAGMENT_RX	103	/* GAS fragment received */
 #define WLC_E_GAS_COMPLETE		104	/* GAS sessions all complete */
-#define WLC_E_LAST	105	/* highest val + 1 for range checking */
+#define WLC_E_INTFERSTAT_IND	105	/* event for tx pkt interference detection */
+#define WLC_E_LAST	106	/* highest val + 1 for range checking */
 
 
 /* Table of event name strings for UIs and debugging dumps */

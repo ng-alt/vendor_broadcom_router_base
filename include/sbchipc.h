@@ -527,8 +527,9 @@ typedef volatile struct {
 #define	CC_CAP2_GSIO		0x00000002	/* GSIO (spi/i2c) present, rev >= 37 */
 
 /* capabilities extension */
-#define CC_CAP_EXT_SECI_PRESENT   0x00000001    /* SECI present */
+#define CC_CAP_EXT_SECI_PRESENT 0x00000001    /* SECI present */
 #define CC_CAP_EXT_GCI_PRESENT	0x00000004    /* GCI present */
+
 #define GCI_WL_CHN_INFO_MASK 	(0xFF00)
 
 /* PLL type */
@@ -1574,8 +1575,11 @@ typedef volatile struct {
 #define CCTRL5357_ANT_MUX_2o3		(1<<15) /* 2o3 in ChipControl 1, bit 15 */
 #define CCTRL5357_NFLASH		(1<<16) /* Nandflash in ChipControl 1, bit 16 */
 
+/* 43217 Chip specific ChipControl register bits */
 #define CCTRL43217_EXTPA_C0             (1<<13) /* core0 extPA in ChipControl 1, bit 13 */
 #define CCTRL43217_EXTPA_C1             (1<<8)  /* core1 extPA in ChipControl 1, bit 8 */
+
+/* 43228 Chip specific ChipControl register bits */
 #define CCTRL43228_EXTPA_C0             (1<<14) /* core1 extPA in ChipControl 1, bit 14 */
 #define CCTRL43228_EXTPA_C1             (1<<9)  /* core0 extPA in ChipControl 1, bit 1 */
 
@@ -2396,13 +2400,12 @@ typedef volatile struct {
 #define CST4335_CHIPMODE_MASK		0xF
 #define CST4335_CHIPMODE_SDIOD(cs)	(((cs) & (1 << 0)) != 0)	/* SDIO */
 #define CST4335_CHIPMODE_GSPI(cs)	(((cs) & (1 << 1)) != 0)	/* gSPI */
-#define CST4335_CHIPMODE_USB20D(cs)	(((cs) & (1 << 2)) != 0)	/* USB || USBDA */
+#define CST4335_CHIPMODE_USB20D(cs)	(((cs) & (1 << 2)) != 0)	/* HSIC || USBDA */
 #define CST4335_CHIPMODE_PCIE(cs)	(((cs) & (1 << 3)) != 0)	/* PCIE */
 
 /* 4335 Chip specific ChipControl1 register bits */
 #define CCTRL1_4335_GPIO_SEL		(1 << 0)    /* 1=select GPIOs to be muxed out */
 #define CCTRL1_4335_SDIO_HOST_WAKE (1 << 2)  /* SDIO: 1=configure GPIO0 for host wake */
-
 
 #define CR4_RAM_BASE                    (0x180000)
 #define PATCHTBL_SIZE			(0x800)
@@ -2602,7 +2605,7 @@ typedef volatile struct {
 #define GCIPOSVAL(val, pos)  ((((uint32)val) << pos) & GCIMASK(pos))
 
 /* 4335 MUX options. each nibble belongs to a setting. Non-zero value specifies a logic
-* for now only UART for bootloader.
+* for now only UART for bootloader and sdio host wakeup.
 */
 #define MUXENAB4335_UART_MASK		(0x0000000f)
 #define MUXENAB4335_UART_SHIFT		0

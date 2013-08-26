@@ -42,13 +42,13 @@
 #define DOME_N_RADIO_OFF       _IOWR(WPS_LED_IOCTL_NUM, 13, int *)
 #define DOME_G_RADIO_ON        _IOWR(WPS_LED_IOCTL_NUM, 14, int *)
 #define DOME_G_RADIO_OFF       _IOWR(WPS_LED_IOCTL_NUM, 15, int *)
-/*  added start, Wins, 04/11/2011 */
-#if defined(R6300v2) || defined(R6250)
+/* Foxconn added start, Wins, 04/11/2011 */
+#if defined(R6300v2) || defined(R6250) || defined(R6200v2) || defined(R7000)
 /* For USB2 LED */
 #define USB2_LED_STATE_ON      _IOWR(WPS_LED_IOCTL_NUM, 16, int *)
 #define USB2_LED_STATE_OFF     _IOWR(WPS_LED_IOCTL_NUM, 17, int *)
 #endif /* R6300v2 */
-/*  added end, Wins, 04/11/2011 */
+/* Foxconn added end, Wins, 04/11/2011 */
 #define WPS_LED_BLINK_AP_LOCKDOWN   _IOWR(WPS_LED_IOCTL_NUM, 18, int *)
 
 
@@ -57,9 +57,11 @@
 #define WPS_LED_STOP_DISABLED   (2)
 
 /* No DOME_LED */
-/*  modified start pling 12/26/2011, for WNDR4000 */
+/* Foxconn modified start pling 12/26/2011, for WNDR4000 */
 #if (defined WNDR4000AC)
 #define WPS_LED_GPIO           (GPIO_LED_WLAN)  /* pling modified 02/03/2012, to blink wlan LED during WPS */
+#elif (defined R7000)
+#define WPS_LED_GPIO           (14) /*(14)*/ /* ACR5500 */ /* modified by EricHuang, 1/11/2012 */
 #else
 #define WPS_LED_GPIO           (11) /*(14)*/ /* ACR5500 */ /* modified by EricHuang, 1/11/2012 */
 #endif /* WNDR4000AC */

@@ -1478,6 +1478,13 @@ srom_read(si_t *sih, uint bustype, void *curmap, osl_t *osh,
 	return 0;
 }
 
+int
+srom_write(si_t *sih, uint bustype, void *curmap, osl_t *osh,
+           uint byteoff, uint nbytes, uint16 *buf)
+{
+    return 0;
+}
+
 #if defined(WLTEST) || defined(DHD_SPROM) || defined(BCMDBG)
 /* support only 16-bit word write into srom */
 int

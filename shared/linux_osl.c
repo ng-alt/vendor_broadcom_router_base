@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: linux_osl.c 377098 2013-01-04 03:52:54Z $
+ * $Id: linux_osl.c 381881 2013-01-30 06:04:30Z $
  */
 
 #define LINUX_PORT
@@ -95,6 +95,11 @@ struct osl_info {
 	spinlock_t pktlist_lock;
 	pktlist_info_t pktlist;
 #endif  /* BCMDBG_PKT */
+#ifdef BCMDBG_CTRACE
+	spinlock_t ctrace_lock;
+	struct list_head ctrace_list;
+	int ctrace_num;
+#endif /* BCMDBG_CTRACE */
 	spinlock_t pktalloc_lock;
 };
 
@@ -263,15 +268,17 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	}
 #endif /* DHD_USE_STATIC_BUF */
 
+#ifdef BCMDBG_CTRACE
+	spin_lock_init(&osh->ctrace_lock);
+	INIT_LIST_HEAD(&osh->ctrace_list);
+	osh->ctrace_num = 0;
+#endif /* BCMDBG_CTRACE */
+
+#ifdef BCMDBG_PKT
+	spin_lock_init(&(osh->pktlist_lock));
+#endif
 	spin_lock_init(&(osh->pktalloc_lock));
 
-#ifdef BCMDBG
-	if (pkttag) {
-		struct sk_buff *skb;
-		BCM_REFERENCE(skb);
-		ASSERT(OSL_PKTTAG_SZ <= sizeof(skb->cb));
-	}
-#endif
 	return osh;
 }
 
@@ -294,13 +301,30 @@ osl_detach(osl_t *osh)
 	kfree(osh);
 }
 
+#define ARES_TRY_CHECK_ALLOC_SKB 1
+#ifdef ARES_TRY_CHECK_ALLOC_SKB
+#define MAX_CHECK_SKBP (30)
+void *ares_check_skbp[MAX_CHECK_SKBP];
+unsigned int ares_check_skbp_index = -1;
+#endif
+
 static struct sk_buff *osl_alloc_skb(osl_t *osh, unsigned int len)
 {
 	struct sk_buff *skb;
+#ifdef ARES_TRY_CHECK_ALLOC_SKB
+	int i;
+	if (ares_check_skbp_index <0) {
+
+		ares_check_skbp_index = 0;
+		memset(ares_check_skbp, 0, sizeof(ares_check_skbp));
+	}
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
 	gfp_t flags = GFP_ATOMIC;
-
+#if defined(CONFIG_SPARSEMEM) && defined(CONFIG_ZONE_DMA)
+	flags |= GFP_DMA;
+#endif
 	skb = __dev_alloc_skb(len, flags);
 #else
 	skb = dev_alloc_skb(len);
@@ -308,6 +332,22 @@ static struct sk_buff *osl_alloc_skb(osl_t *osh, unsigned int len)
 
 #ifdef CTFMAP
 	if (skb) {
+#ifdef ARES_TRY_CHECK_ALLOC_SKB
+		unsigned int kaddr = (unsigned int)PKTDATA(osh, skb);
+		
+		if (!virt_addr_valid(kaddr) || !virt_addr_valid(kaddr + len - 1) ) {
+
+			printk("\n !! osl_alloc_skb: INVALID skb %p, skb %p data 0x%08x size %d \n", skb, kaddr,  len);
+			for (i = 0; i < MAX_CHECK_SKBP; i++) {
+				if (ares_check_skbp[i] == NULL){
+					ares_check_skbp[i] = skb;
+					break;
+				}
+			}
+			/* silience leak skb. */
+			return NULL;
+		}
+#endif
 		_DMA_MAP(osh, PKTDATA(osh, skb), len, DMA_RX, NULL, NULL);
 	}
 #endif
@@ -355,17 +395,8 @@ osl_ctfpool_add(osl_t *osh)
 		CTFPOOL_UNLOCK(osh->ctfpool, flags);
 		return NULL;
 	}
-
-	/* Add to ctfpool */
-	if (osh->ctfpool->head == NULL) {
-		osh->ctfpool->head = skb;
-		osh->ctfpool->tail = skb;
-	}
-	else {
-		((struct sk_buff *)osh->ctfpool->tail)->next = skb;
-		osh->ctfpool->tail = skb;
-	}
-
+	skb->next = (struct sk_buff *)osh->ctfpool->head;
+	osh->ctfpool->head = skb;
 	osh->ctfpool->fast_frees++;
 	osh->ctfpool->curr_obj++;
 
@@ -447,7 +478,6 @@ osl_ctfpool_cleanup(osl_t *osh)
 
 	ASSERT(osh->ctfpool->curr_obj == 0);
 	osh->ctfpool->head = NULL;
-	osh->ctfpool->tail = NULL;
 	CTFPOOL_UNLOCK(osh->ctfpool, flags);
 
 	kfree(osh->ctfpool);
@@ -547,6 +577,9 @@ struct sk_buff * BCMFASTPATH
 osl_pkt_tonative(osl_t *osh, void *pkt)
 {
 	struct sk_buff *nskb;
+#ifdef BCMDBG_CTRACE
+	struct sk_buff *nskb1, *nskb2;
+#endif
 #ifdef BCMDBG_PKT
 	unsigned long flags;
 #endif
@@ -562,6 +595,18 @@ osl_pkt_tonative(osl_t *osh, void *pkt)
 		spin_unlock_irqrestore(&osh->pktlist_lock, flags);
 #endif  /* BCMDBG_PKT */
 		atomic_sub(PKTISCHAINED(nskb) ? PKTCCNT(nskb) : 1, &osh->pktalloced);
+
+#ifdef BCMDBG_CTRACE
+		for (nskb1 = nskb; nskb1 != NULL; nskb1 = nskb2) {
+			if (PKTISCHAINED(nskb1)) {
+				nskb2 = PKTCLINK(nskb1);
+			}
+			else
+				nskb2 = NULL;
+
+			DEL_CTRACE(osh, nskb1);
+		}
+#endif /* BCMDBG_CTRACE */
 	}
 	return (struct sk_buff *)pkt;
 }
@@ -574,11 +619,19 @@ osl_pkt_tonative(osl_t *osh, void *pkt)
 void *
 osl_pkt_frmnative(osl_t *osh, void *pkt, int line, char *file)
 #else /* BCMDBG_PKT pkt logging for debugging */
+#ifdef BCMDBG_CTRACE
+void * BCMFASTPATH
+osl_pkt_frmnative(osl_t *osh, void *pkt, int line, char *file)
+#else
 void * BCMFASTPATH
 osl_pkt_frmnative(osl_t *osh, void *pkt)
+#endif /* BCMDBG_CTRACE */
 #endif /* BCMDBG_PKT */
 {
 	struct sk_buff *nskb;
+#ifdef BCMDBG_CTRACE
+	struct sk_buff *nskb1, *nskb2;
+#endif
 #ifdef BCMDBG_PKT
 	unsigned long flags;
 #endif
@@ -594,6 +647,18 @@ osl_pkt_frmnative(osl_t *osh, void *pkt)
 		spin_unlock_irqrestore(&osh->pktlist_lock, flags);
 #endif  /* BCMDBG_PKT */
 		atomic_add(PKTISCHAINED(nskb) ? PKTCCNT(nskb) : 1, &osh->pktalloced);
+
+#ifdef BCMDBG_CTRACE
+		for (nskb1 = nskb; nskb1 != NULL; nskb1 = nskb2) {
+			if (PKTISCHAINED(nskb1)) {
+				nskb2 = PKTCLINK(nskb1);
+			}
+			else
+				nskb2 = NULL;
+
+			ADD_CTRACE(osh, nskb1, file, line);
+		}
+#endif /* BCMDBG_CTRACE */
 	}
 	return (void *)pkt;
 }
@@ -603,8 +668,13 @@ osl_pkt_frmnative(osl_t *osh, void *pkt)
 void * BCMFASTPATH
 osl_pktget(osl_t *osh, uint len, int line, char *file)
 #else /* BCMDBG_PKT */
+#ifdef BCMDBG_CTRACE
+void * BCMFASTPATH
+osl_pktget(osl_t *osh, uint len, int line, char *file)
+#else
 void * BCMFASTPATH
 osl_pktget(osl_t *osh, uint len)
+#endif /* BCMDBG_CTRACE */
 #endif /* BCMDBG_PKT */
 {
 	struct sk_buff *skb;
@@ -619,14 +689,13 @@ osl_pktget(osl_t *osh, uint len)
 #else /* CTFPOOL */
 	if ((skb = osl_alloc_skb(osh, len))) {
 #endif /* CTFPOOL */
-#ifdef BCMDBG
-		skb_put(skb, len);
-#else
 		skb->tail += len;
 		skb->len  += len;
-#endif
 		skb->priority = 0;
 
+#ifdef BCMDBG_CTRACE
+		ADD_CTRACE(osh, skb, file, line);
+#endif
 #ifdef BCMDBG_PKT
 		spin_lock_irqsave(&osh->pktlist_lock, flags);
 		pktlist_add(&(osh->pktlist), (void *) skb, line, file);
@@ -672,14 +741,8 @@ osl_pktfastfree(osl_t *osh, struct sk_buff *skb)
 
 	/* Add object to the ctfpool */
 	CTFPOOL_LOCK(ctfpool, flags);
-	if (ctfpool->head == NULL) {
-		ctfpool->head = skb;
-		ctfpool->tail = skb;
-	}
-	else {
-		((struct sk_buff *)ctfpool->tail)->next = skb;
-		ctfpool->tail = skb;
-	}
+	skb->next = (struct sk_buff *)ctfpool->head;
+	ctfpool->head = (void *)skb;
 
 	ctfpool->fast_frees++;
 	ctfpool->curr_obj++;
@@ -710,6 +773,9 @@ osl_pktfree(osl_t *osh, void *p, bool send)
 		nskb = skb->next;
 		skb->next = NULL;
 
+#ifdef BCMDBG_CTRACE
+		DEL_CTRACE(osh, skb);
+#endif
 #ifdef BCMDBG_PKT
 		spin_lock_irqsave(&osh->pktlist_lock, flags);
 		pktlist_remove(&(osh->pktlist), (void *) skb);
@@ -723,6 +789,7 @@ osl_pktfree(osl_t *osh, void *p, bool send)
 #endif /* CTFMAP */
 
 #ifdef CTFPOOL
+        /* foxconn wklin modified, 07/07/2011 */
         /* add CTFPOOLPTR() check because..
          * skb->mac_len bit 4 may be set (PKTISFAST()==true) in the stack...*/
 		if (PKTISFAST(osh, skb) && CTFPOOLPTR(osh, skb) && (atomic_read(&skb->users) == 1))
@@ -1414,8 +1481,13 @@ osl_long_delay(osl_t *osh, uint usec, bool yield)
 void *
 osl_pktdup(osl_t *osh, void *skb, int line, char *file)
 #else /* BCMDBG_PKT */
+#ifdef BCMDBG_CTRACE
+void *
+osl_pktdup(osl_t *osh, void *skb, int line, char *file)
+#else
 void *
 osl_pktdup(osl_t *osh, void *skb)
+#endif /* BCMDBG_CTRACE */
 #endif /* BCMDBG_PKT */
 {
 	void * p;
@@ -1467,6 +1539,9 @@ osl_pktdup(osl_t *osh, void *skb)
 
 	/* Increment the packet counter */
 	atomic_inc(&osh->pktalloced);
+#ifdef BCMDBG_CTRACE
+	ADD_CTRACE(osh, (struct sk_buff *)p, file, line);
+#endif
 #ifdef BCMDBG_PKT
 	spin_lock_irqsave(&osh->pktlist_lock, irqflags);
 	pktlist_add(&(osh->pktlist), (void *) p, line, file);
@@ -1474,6 +1549,65 @@ osl_pktdup(osl_t *osh, void *skb)
 #endif
 	return (p);
 }
+
+#ifdef BCMDBG_CTRACE
+int osl_pkt_is_frmnative(osl_t *osh, struct sk_buff *pkt)
+{
+	unsigned long flags;
+	struct sk_buff *skb;
+	int ck = FALSE;
+
+	spin_lock_irqsave(&osh->ctrace_lock, flags);
+
+	list_for_each_entry(skb, &osh->ctrace_list, ctrace_list) {
+		if (pkt == skb) {
+			ck = TRUE;
+			break;
+		}
+	}
+
+	spin_unlock_irqrestore(&osh->ctrace_lock, flags);
+	return ck;
+}
+
+void osl_ctrace_dump(osl_t *osh, struct bcmstrbuf *b)
+{
+	unsigned long flags;
+	struct sk_buff *skb;
+	int idx = 0;
+	int i, j;
+
+	spin_lock_irqsave(&osh->ctrace_lock, flags);
+
+	if (b != NULL)
+		bcm_bprintf(b, " Total %d sbk not free\n", osh->ctrace_num);
+	else
+		printk(" Total %d sbk not free\n", osh->ctrace_num);
+
+	list_for_each_entry(skb, &osh->ctrace_list, ctrace_list) {
+		if (b != NULL)
+			bcm_bprintf(b, "[%d] skb %p:\n", ++idx, skb);
+		else
+			printk("[%d] skb %p:\n", ++idx, skb);
+
+		for (i = 0; i < skb->ctrace_count; i++) {
+			j = (skb->ctrace_start + i) % CTRACE_NUM;
+			if (b != NULL)
+				bcm_bprintf(b, "    [%s(%d)]\n", skb->func[j], skb->line[j]);
+			else
+				printk("    [%s(%d)]\n", skb->func[j], skb->line[j]);
+		}
+		if (b != NULL)
+			bcm_bprintf(b, "\n");
+		else
+			printk("\n");
+	}
+
+	spin_unlock_irqrestore(&osh->ctrace_lock, flags);
+
+	return;
+}
+#endif /* BCMDBG_CTRACE */
 
 #ifdef BCMDBG_PKT
 #ifdef BCMDBG_PTRACE
@@ -1937,20 +2071,21 @@ osl_os_close_image(void *image)
 		filp_close((struct file *)image, NULL);
 }
 
-int (*ip_pre_insert_hook)(struct sk_buff *skb);
+//Foxconn add start, Lewis Min, for UBD, 04/18/2008
+int (*ip_pre_insert_hook)(struct sk_buff *skb);//Foxconn add , Lewis Min, for UBD, 04/18/2008
 
 void insert_func_to_IP_PRE_ROUTE(void *FUNC)
 {
-    local_bh_disable(); 
+    local_bh_disable(); /* foxconn wklin added, 11/24/2008 */
     ip_pre_insert_hook= FUNC;
-    local_bh_enable(); 
+    local_bh_enable(); /* foxconn wklin added, 11/24/2008 */
 }
 
 void remove_func_to_IP_PRE_ROUTE(void *FUNC)
 {
-    local_bh_disable(); 
+    local_bh_disable(); /* foxconn wklin added, 11/24/2008 */
     ip_pre_insert_hook= NULL;
-    local_bh_enable(); 
+    local_bh_enable(); /* foxconn wklin added, 11/24/2008 */
 }
 
 int

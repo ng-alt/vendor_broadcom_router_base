@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011, Broadcom Corporation
+ * Copyright (C) 2012, Broadcom Corporation
  * All Rights Reserved.
  * 
  * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
@@ -23,9 +23,6 @@
 #define IGSCFG_CMD_IGSDB_LIST       4
 #define IGSCFG_CMD_RTPORT_LIST      5
 #define IGSCFG_CMD_IGS_STATS        6
-#ifdef __CONFIG_IGMP_SNOOPING__
-#define IGSCFG_CMD_SNOOP_LIST       7 /*  add by Lewis Min, for igmp snooping */
-#endif
 
 #define IGSCFG_OPER_TYPE_GET        1
 #define IGSCFG_OPER_TYPE_SET        2
@@ -56,19 +53,6 @@ typedef struct igs_cfg_sdb_list
 		uint8  if_name[16];       /* Interface member is present */
 	} sdb_entry[0];
 } igs_cfg_sdb_list_t;
-
-/*  add by Lewis Min, for igmp snooping */
-#ifdef __CONFIG_IGMP_SNOOPING__
-typedef struct igs_cfg_snoop_list
-{
-	uint32  num_entries;              /* Num of entries in IGSDB */
-	struct snoop_entry
-	{
-		uint8 mh_mac[6];             /* Member MAC address */
-		uint16  port_mapping;       /* port mapping */
-	} snoop_entry[0];
-} igs_cfg_snoop_list_t;
-#endif
 
 typedef struct igs_cfg_rtport
 {

@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmotp.c 347910 2012-07-30 13:27:44Z $
+ * $Id: bcmotp.c 361350 2012-10-08 10:09:58Z $
  */
 
 #include <bcm_cfg.h>
@@ -269,7 +269,7 @@ get_otpinfo(void)
 
 /* OTP unification */
 #if defined(USBSDIOUNIFIEDOTP)
-/* USB MANIFID tuple offset in the SDIO CIS in (16-bit) words */
+/* Offset in OTP from upper GUR to HNBU_UMANFID tuple value in (16-bit) words */
 #define USB_MANIFID_OFFSET_4319		42
 #define USB_MANIFID_OFFSET_43143	45 /* See Confluence 43143 SW notebook #1 */
 #define USB_MANIFID_OFFSET_4335		8
@@ -2835,7 +2835,7 @@ static	uint st_n, st_s, st_hwm, pp_hwm;
 #ifdef	OTP_FORCEFAIL
 static	uint forcefail_bitcount = 0;
 #endif /* OTP_FORCEFAIL */
-#endif 
+#endif /* BCMDBG || WLTEST */
 
 static int
 hndotp_write_bit(void *oh, chipcregs_t *cc, int bn, bool bit, int no_retry)
@@ -2886,7 +2886,7 @@ hndotp_write_bit(void *oh, chipcregs_t *cc, int bn, bool bit, int no_retry)
 #if defined(BCMDBG) || defined(WLTEST)
 		if (k > pp_hwm)
 			pp_hwm = k;
-#endif 
+#endif /* BCMDBG || WLTEST */
 		if (k >= OTPP_TRIES) {
 			OTP_ERR(("BUSY stuck: pst=0x%x, count=%d\n", pst, k));
 			st = OTPS_PROGFAIL;
@@ -2916,7 +2916,7 @@ hndotp_write_bit(void *oh, chipcregs_t *cc, int bn, bool bit, int no_retry)
 		st = OTPS_PROGFAIL;
 	}
 #endif
-#endif 
+#endif /* BCMDBG || WLTEST */
 	if (st & OTPS_PROGFAIL) {
 		OTP_ERR(("After %d tries: otpc = 0x%x, otpp = 0x%x/0x%x, otps = 0x%x\n",
 		       j, otpc | pwait, otpp, pst, st));
@@ -3193,7 +3193,7 @@ hndotp_write_region(void *oh, int region, uint16 *data, uint wlen)
 
 #if defined(BCMDBG) || defined(WLTEST)
 	st_n = st_s = st_hwm = pp_hwm = 0;
-#endif 
+#endif /* BCMDBG || WLTEST */
 
 	/* force ALP for progrramming stability */
 	save_clk = R_REG(oi->osh, &cc->clk_ctl_st);
@@ -3374,7 +3374,7 @@ hndotp_nvwrite(void *oh, uint16 *data, uint wlen)
 
 #if defined(BCMDBG) || defined(WLTEST)
 	st_n = st_s = st_hwm = pp_hwm = 0;
-#endif 
+#endif /* BCMDBG || WLTEST */
 
 	/* Prepare the header and crc */
 	hdr[0] = OTP_MAGIC;

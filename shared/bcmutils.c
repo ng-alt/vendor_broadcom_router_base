@@ -226,6 +226,12 @@ pktpool_enq(pktpool_t *pktp, void *p)
 
 	ASSERT(pktp->q[pktp->w] == NULL);
 
+#ifdef BCMDBG_ASSERT
+	if (pktpool_avail(pktp)) {
+		int prev = (pktp->w == 0) ? (pktp->len - 1) : (pktp->w - 1);
+		ASSERT(pktp->q[prev] != p);
+	}
+#endif
 	pktp->q[pktp->w] = p;
 	pktp->w = next;
 }

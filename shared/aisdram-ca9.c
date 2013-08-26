@@ -893,7 +893,11 @@ c_ddr_init(unsigned long ra)
 	ddr = (ddrcregs_t *)si_setcore(sih, NS_DDR23_CORE_ID, 0);
 	if (!ddr)
 		goto out;
-	val = R_REG(osh, &ddr->control[0]);
+	val = R_REG(osh, (uint32 *)DDR_S1_IDM_RESET_CONTROL);
+	if ((val & AIRC_RESET) == 0)
+		val = R_REG(osh, &ddr->control[0]);
+	else
+		val = 0;
 	if (val & DDRC00_START) {
 		clkval = *((uint32 *)(0x1000 + BISZ_OFFSET - 4));
 		if (clkval) {
@@ -903,6 +907,10 @@ c_ddr_init(unsigned long ra)
 			ddrclock = clkval;
 			si_mem_setclock(sih, ddrclock);
 		}
+	} else {
+		/* DDR PHY doesn't support 333MHz for DDR3, so set the clock to 400 by default. */
+		ddrclock = DDR3_MIN_CLOCK;
+		si_mem_setclock(sih, ddrclock);
 	}
 
 	/* Find NVRAM for the sdram_config variable */
@@ -956,8 +964,8 @@ embedded_nv:
 			break; /* DDR PHY is up */
 	}
 	if (i == 0x19000) {
-		printf("DDR PHY is not up\n");
-		goto out;
+		si_watchdog(sih, 1);
+		while (1);
 	}
 
 	/* Change PLL divider values inside PHY */
@@ -1042,23 +1050,9 @@ embedded_nv:
 			goto out;
 		}
 
-		if (!(R_REG(osh, &ddr->phy_control_vdl_calibsts) & 0x2)) {
-			/* Auto calibration failed, do the override */
-			printf("Auto calibration failed, do the override\n");
-			W_REG(osh, &ddr->phy_control_vdl_ovride_bitctl, 0x0001003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit0_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit1_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit2_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit3_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit4_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit5_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit6_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_bit7_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_dm_w, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_r_p, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte0_r_n, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte1_r_p, 0x0003003f);
-			W_REG(osh, &ddr->phy_ln0_vdl_ovride_byte1_r_n, 0x0003003f);
+		if (!(val & 0x2)) {
+			si_watchdog(sih, 1);
+			while (1);
 		}
 	}
 
@@ -1115,7 +1109,7 @@ embedded_nv:
 		/* Now do CAS latency settings */
 		cas = sdram_config & 0x1f;
 		if (cas > 5)
-		wrlat = cas - (cas-4)/2;
+			wrlat = cas - (cas-4)/2;
 		else
 			wrlat = cas - 1;
 
@@ -1176,7 +1170,7 @@ embedded_nv:
 	W_REG(osh, &ddr->phy_ln0_rddata_dly, 3);	/* high sku? */
 
 	/* Run the SHMOO */
-	if (ddrtype_ddr3 && ddrclock != DDR_DEFAULT_CLOCK) {
+	if (ddrtype_ddr3 && ddrclock > DDR3_MIN_CLOCK) {
 		status = do_shmoo((void *)sih, DDR_PHY_CONTROL_REGS_REVISION, 0,
 			((26 << 16) | (16 << 8) | DO_ALL_SHMOO), 0x1000000);
 		if (status != SHMOO_NO_ERROR) {
