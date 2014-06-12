@@ -1,7 +1,7 @@
 /*
  * SROM format definition.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmsrom_fmt.h 360211 2012-10-02 06:01:44Z $
+ * $Id: bcmsrom_fmt.h 426998 2013-10-01 23:54:31Z $
  */
 
 #ifndef	_bcmsrom_fmt_h_
@@ -383,6 +383,7 @@
 #define SROM8_NOISELVL_5GM	215
 #define SROM8_NOISELVL_5GH	216
 #define SROM8_NOISELVL_5GU	217
+#define SROM8_NOISECALOFFSET	218
 
 #define SROM9_REV_CRC		219
 
@@ -477,7 +478,7 @@
 #define SROM11_PDOFF_2G_40M_VALID_MASK  0x8000
 #define SROM11_PDOFF_2G_40M_VALID_SHIFT 15
 
-#define SROM11_PDOFF_2G_40M 	100
+#define SROM11_PDOFF_2G_40M     	100
 #define SROM11_PDOFF_40M_A0		101
 #define SROM11_PDOFF_40M_A1		102
 #define SROM11_PDOFF_40M_A2		103
@@ -568,6 +569,7 @@
 #define SROM11_MCSBW805GHPO 		196
 #define SROM11_MCSBW805GHPO_1		197
 #define SROM11_RPCAL_5GU		198
+#define SROM11_PDOFF_2G_CCK	        199
 #define SROM11_MCSLR5GLPO		200
 #define SROM11_MCSLR5GMPO		201
 #define SROM11_MCSLR5GHPO		202

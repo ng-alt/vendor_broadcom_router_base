@@ -3,7 +3,7 @@
  *
  * Used by both cfe and shared/boot.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,33 +31,9 @@
  *  and previous chips. Also,  it changes k0 and k1 registers.
  *  Value can be read from epidiag -j using "pci r 0x180000d0 4"
  */
-#ifdef	BCMDBG
-#if	defined(IL_BIGENDIAN) && defined(BCMHND74K)
-#define	BPADDR_OFF	4
-#define	BPDATA_OFF	12
-#else
-#define	BPADDR_OFF	0
-#define	BPDATA_OFF	8
-#endif
-
-#define TRACEINIT(x) \
-	li	k0,KSEG1ADDR(0x180000d0); \
-	li	k1,x; \
-	sw	k1,BPADDR_OFF(k0)
-	
-#define TRACE(x) \
-	li	k1,x; \
-	sw	k1,BPADDR_OFF(k0)
-
-#define TRACE2(x) \
-	li	k1,x; \
-	sw	k1,BPDATA_OFF(k0)
-
-#else
 #define TRACEINIT(x)
 #define TRACE(x)
 #define TRACE2(x)
-#endif	/* BCMDBG */
 
 	/*
 	 * This file exists because board_draminit is an entry point for cfe as well

@@ -3,7 +3,7 @@
  *
  * Code should be position-independent until it copies itself to SDRAM.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,73 +34,14 @@
  *  and previous chips. Also,  it changes k0 and k1 registers.
  *  Value can be read from epidiag -j using "pci r 0x180000d0 4"
  */
-#ifdef	BCMDBG
-#if	defined(IL_BIGENDIAN) && defined(BCMHND74K)
-#define	BPADDR_OFF	4
-#define	BPDATA_OFF	12
-#else
-#define	BPADDR_OFF	0
-#define	BPDATA_OFF	8
-#endif
-
-#define TRACEINIT(x) \
-	li	k0,KSEG1ADDR(0x180000d0); \
-	li	k1,x; \
-	sw	k1,BPADDR_OFF(k0)
-	
-#define TRACE(x) \
-	li	k1,x; \
-	sw	k1,BPADDR_OFF(k0)
-
-#define TRACE2(x) \
-	li	k1,x; \
-	sw	k1,BPDATA_OFF(k0)
-
-#else
 #define TRACEINIT(x)
 #define TRACE(x)
 #define TRACE2(x)
-#endif	/* BCMDBG */
 
 	.text
 	LEAF(startup)
 	.set	noreorder
 
-#ifdef	BCMDBG
-	.set	noat
-	li	$1,0x0badc0de
-	.set	at
-	li	$2,0x0badc0de
-	li	$3,0x0badc0de
-	li	$4,0x0badc0de
-	li	$5,0x0badc0de
-	li	$6,0x0badc0de
-	li	$7,0x0badc0de
-	li	$8,0x0badc0de
-	li	$9,0x0badc0de
-	li	$10,0x0badc0de
-	li	$11,0x0badc0de
-	li	$12,0x0badc0de
-	li	$13,0x0badc0de
-	li	$14,0x0badc0de
-	li	$15,0x0badc0de
-	li	$16,0x0badc0de
-	li	$17,0x0badc0de
-	li	$18,0x0badc0de
-	li	$19,0x0badc0de
-	li	$20,0x0badc0de
-	li	$21,0x0badc0de
-	li	$22,0x0badc0de
-	li	$23,0x0badc0de
-	li	$24,0x0badc0de
-	li	$25,0x0badc0de
-	li	$26,0x0badc0de
-	li	$27,0x0badc0de
-	li	$28,0x0badc0de
-	li	$29,0x0badc0de
-	li	$30,0x0badc0de
-	li	$31,0x0badc0de
-#endif	/* BCMDBG */
 
 	TRACEINIT(0x424f00)
 	# XXX: the following code snipet sets clk frequency to 200M
@@ -303,8 +244,8 @@ bevtrap:
 	.globl	embedded_nvram
 embedded_nvram:
 	.fill	0x400,4,~(0x48534c46)
-        .long   0x4c5a4d41              # LZMA NVRAM Supported
-	
+	.long   0x4c5a4d41              # LZMA NVRAM Supported
+
 chkcacheon:
 	TRACE(0x424f0b)
 	/* Check if the caches are already on */

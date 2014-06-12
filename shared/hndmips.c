@@ -1,7 +1,7 @@
 /*
  * BCM47XX Sonics SiliconBackplane MIPS core routines
  *
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: hndmips.c 312603 2012-02-03 03:19:06Z $
+ * $Id: hndmips.c 404499 2013-05-28 01:06:37Z $
  */
 
 #include <bcm_cfg.h>
@@ -38,17 +38,9 @@
 #include <dmemc_core.h>
 
 /* debug/trace */
-#ifdef BCMDBG_ERR
-#define	HNDMIPS_ERROR(args)	printf args
-#else
 #define	HNDMIPS_ERROR(args)
-#endif	/* BCMDBG_ERR */
 
-#ifdef BCMDBG
-#define	HNDMIPS_MSG(args)	printf args
-#else
 #define	HNDMIPS_MSG(args)
-#endif	/* BCMDBG */
 #define	HNDMIPS_NONE(args)
 
 /* sbipsflag register format, indexed by irq. */

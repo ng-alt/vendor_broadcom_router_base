@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  *
  * Fundamental constants relating to IP Protocol
  *
- * $Id: bcmip.h 329791 2012-04-26 22:36:58Z $
+ * $Id: bcmip.h 458522 2014-02-27 02:26:15Z $
  */
 
 #ifndef _bcmip_h_
@@ -84,6 +84,15 @@
 #define IPV4_TOS_THROUGHPUT	0x8	/* Best throughput requested */
 #define IPV4_TOS_RELIABILITY	0x4	/* Most reliable delivery requested */
 
+#define IPV4_TOS_ROUTINE        0
+#define IPV4_TOS_PRIORITY       1
+#define IPV4_TOS_IMMEDIATE      2
+#define IPV4_TOS_FLASH          3
+#define IPV4_TOS_FLASHOVERRIDE  4
+#define IPV4_TOS_CRITICAL       5
+#define IPV4_TOS_INETWORK_CTRL  6
+#define IPV4_TOS_NETWORK_CTRL   7
+
 #define IPV4_PROT(ipv4_body)	(((uint8 *)(ipv4_body))[IPV4_PROT_OFFSET])
 
 #define IPV4_FRAG_RESV		0x8000	/* Reserved */
@@ -92,15 +101,6 @@
 #define IPV4_FRAG_OFFSET_MASK	0x1fff	/* Fragment offset */
 
 #define IPV4_ADDR_STR_LEN	16	/* Max IP address length in string format */
-
-/*borg DTM QoS*/
-/* IPv4, no options only.  */
-#define IPV4_NO_OPTIONS_HDR_LEN 20
-#define IPV4_NO_OPTIONS_PAYLOAD(ip_hdr)    (&(((uint8 *)(ip_hdr))[IPV4_NO_OPTIONS_HDR_LEN]))
-
-#define IPV4_PAYLOAD_LEN(ip_body) \
-	(((int)(((uint8 *)(ip_body))[IPV4_PKTLEN_OFFSET + 0]) << 8) | \
-	 ((uint8 *)(ip_body))[IPV4_PKTLEN_OFFSET + 1])
 
 /* IPV4 packet formats */
 BWL_PRE_PACKED_STRUCT struct ipv4_addr {
@@ -154,6 +154,11 @@ BWL_PRE_PACKED_STRUCT struct ipv4_hdr {
 	 IP_VER(ip_body) == IP_VER_6 ? IPV6_TRAFFIC_CLASS(ip_body) : 0)
 
 #define IP_DSCP46(ip_body) (IP_TOS46(ip_body) >> IPV4_TOS_DSCP_SHIFT);
+
+/* IPV4 or IPV6 Protocol Classifier or 0 */
+#define IP_PROT46(ip_body) \
+	(IP_VER(ip_body) == IP_VER_4 ? IPV4_PROT(ip_body) : \
+	 IP_VER(ip_body) == IP_VER_6 ? IPV6_PROT(ip_body) : 0)
 
 /* IPV6 extension headers (options) */
 #define IPV6_EXTHDR_HOP		0
@@ -224,5 +229,11 @@ ipv6_exthdr_len(uint8 *h, uint8 *proto)
 
 /* This marks the end of a packed structure section. */
 #include <packed_section_end.h>
+
+#define IPV4_ADDR_STR "%d.%d.%d.%d"
+#define IPV4_ADDR_TO_STR(addr)	((uint32)addr & 0xff000000) >> 24, \
+								((uint32)addr & 0x00ff0000) >> 16, \
+								((uint32)addr & 0x0000ff00) >> 8, \
+								((uint32)addr & 0x000000ff)
 
 #endif	/* _bcmip_h_ */

@@ -1,7 +1,7 @@
 /*
  * NVRAM variable manipulation
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmnvram.h 387727 2013-02-26 23:31:22Z $
+ * $Id: bcmnvram.h 428235 2013-10-08 02:44:09Z $
  */
 
 #ifndef _bcmnvram_h_
@@ -227,10 +227,10 @@ extern int nvram_space;
 #define BCM_JUMBO_NVRAM_DELIMIT '\n'
 #define BCM_JUMBO_START "Broadcom Jumbo Nvram file"
 
-#if !defined(BCMHIGHSDIO) && defined(BCMTRXV2)
+#if !defined(BCMDONGLEHOST) && !defined(BCMHIGHSDIO) && defined(BCMTRXV2)
 extern char *_vars;
 extern uint _varsz;
-#endif  
+#endif  /* !defined(BCMDONGLEHOST) && !defined(BCMHIGHSDIO) && defined(BCMTRXV2) */
 
 #if (defined(FAILSAFE_UPGRADE) || defined(CONFIG_FAILSAFE_UPGRADE) || \
 	defined(__CONFIG_FAILSAFE_UPGRADE_SUPPORT__))

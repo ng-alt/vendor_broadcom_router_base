@@ -1,7 +1,7 @@
 /*
  * RoboSwitch setup functions
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmrobo.h 363505 2012-10-18 01:58:09Z $
+ * $Id: bcmrobo.h 462657 2014-03-18 11:31:42Z $
  */
 
 #ifndef _bcm_robo_h_
@@ -181,6 +181,10 @@ struct robo_info_s {
 	/* PLC */
 	bool	plc_hw;			/* PLC chip */
 #endif /* PLC */
+#ifdef BCMFA
+	int		aux_pid;
+#endif /* BCMFA */
+
 };
 /* Foxconn add start by Lewis Min, 04/02/2008, for igmp snooping */
 #ifdef __CONFIG_IGMP_SNOOPING__
@@ -204,6 +208,7 @@ extern void bcm_robo_detach(robo_info_t *robo);
 extern int bcm_robo_enable_device(robo_info_t *robo);
 extern int bcm_robo_config_vlan(robo_info_t *robo, uint8 *mac_addr);
 extern int bcm_robo_enable_switch(robo_info_t *robo);
+extern int bcm_robo_flow_control(robo_info_t *robo, bool set);
 
 
 extern void robo_watchdog(robo_info_t *robo);
@@ -220,7 +225,10 @@ extern int is_iptv_port(int port);
 extern void robo_plc_hw_init(robo_info_t *robo);
 #endif /* PLC */
 
-void bcm_robo_snooping_add(uint32 mgrp_ip, int portid);
-void bcm_robo_snooping_del(uint32 mgrp_ip, int portid);
+#ifdef BCMFA
+extern void robo_fa_aux_init(robo_info_t *robo);
+extern void robo_fa_aux_enable(robo_info_t *robo, bool enable);
+extern void robo_fa_enable(robo_info_t *robo, bool on, bool bhdr);
+#endif
 
 #endif /* _bcm_robo_h_ */

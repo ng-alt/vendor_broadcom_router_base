@@ -13,26 +13,9 @@
 #define FUNC(x) LEAF(x)
 #endif  /* __thumb__ */
 
-#ifdef BCMDBG
-#define TRACE(x) \
-	ldr	r9,=(x); \
-	ldr     r10,=SI_ENUM_BASE; \
-	str	r9,[r10,#0x64]
-
-#define TRACE1(x) \
-	mov	r9,x; \
-	ldr     r10,=SI_ENUM_BASE; \
-	str	r9,[r10,#0x68]
-
-#define TRACE2(x) \
-	mov	r9,x; \
-	ldr     r10,=SI_ENUM_BASE; \
-	str	r9,[r10,#0x64]
-#else
 #define TRACE(x)
 #define TRACE1(x)
 #define TRACE2(x)
-#endif
 
 	.text
 

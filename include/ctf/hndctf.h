@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: hndctf.h 385684 2013-02-17 20:32:12Z $
+ * $Id: hndctf.h 469418 2014-04-10 09:28:49Z $
  */
 
 #ifndef _HNDCTF_H_
@@ -42,9 +42,13 @@
 #define CTF_ACTION_BYTECNT	(1 << 7)
 #define CTF_ACTION_PPPOE_ADD	(1 << 8)
 #define CTF_ACTION_PPPOE_DEL	(1 << 9)
+#define CTF_ACTION_BR_AS_TXIF	(1 << 10)
 
 #define CTF_SUSPEND_TCP		(1 << 0)
 #define CTF_SUSPEND_UDP		(1 << 1)
+
+#define CTF_SUSPEND_TCP_MASK		0x55555555
+#define CTF_SUSPEND_UDP_MASK		0xAAAAAAAA
 
 #define	ctf_attach(osh, n, m, c, a) \
 	(ctf_attach_fn ? ctf_attach_fn(osh, n, m, c, a) : NULL)
@@ -87,9 +91,25 @@
 #define ctf_dump(ci, b)			if (CTF_ENAB(ci)) (ci)->fn.dump(ci, b)
 #define ctf_cfg_req_process(ci, c)	if (CTF_ENAB(ci)) (ci)->fn.cfg_req_process(ci, c)
 #define ctf_dev_unregister(ci, d)	if (CTF_ENAB(ci)) (ci)->fn.dev_unregister(ci, d)
+#ifdef BCMFA
+#define ctf_fa_register(ci, d, i)	if (CTF_ENAB(ci)) (ci)->fn.fa_register(ci, d, i)
+#define ctf_live(ci, i, v6)		(CTF_ENAB(ci) ? (ci)->fn.live(ci, i, v6) : FALSE)
+#endif /* BCMFA */
+
+/* For broadstream iqos */
+#define ctf_fwdcb_register(ci, cb)           \
+		(CTF_ENAB(ci) ? (ci)->fn.ctf_fwdcb_register(ci, cb) : BCME_OK)
 
 #define CTFCNTINCR(s) ((s)++)
 #define CTFCNTADD(s, c) ((s) += (c))
+
+/* Copy an ethernet address in reverse order */
+#define	ether_rcopy(s, d) \
+do { \
+	((uint16 *)(d))[2] = ((uint16 *)(s))[2]; \
+	((uint16 *)(d))[1] = ((uint16 *)(s))[1]; \
+	((uint16 *)(d))[0] = ((uint16 *)(s))[0]; \
+} while (0)
 
 #define PPPOE_ETYPE_OFFSET	12
 #define PPPOE_VER_OFFSET	14
@@ -97,9 +117,12 @@
 #define PPPOE_LEN_OFFSET	18
 
 #define PPPOE_HLEN		20
+#define PPPOE_PPP_HLEN		8
 
 #define PPPOE_PROT_PPP		0x0021
+#define PPPOE_PROT_PPP_IP6	0x0057
 
+#define CTF_DROP_PACKET	-2	/* Don't osl_startxmit if fwdcb return this */
 
 typedef struct ctf_pub	ctf_t;
 typedef struct ctf_brc	ctf_brc_t;
@@ -138,6 +161,16 @@ typedef int32 (*ctf_dev_vlan_add_t)(ctf_t *ci, void *dev, uint16 vid, void *vlde
 typedef int32 (*ctf_dev_vlan_delete_t)(ctf_t *ci, void *dev, uint16 vid);
 typedef void (*ctf_dump_t)(ctf_t *ci, struct bcmstrbuf *b);
 typedef void (*ctf_cfg_req_process_t)(ctf_t *ci, void *arg);
+#ifdef BCMFA
+typedef int (*ctf_fa_cb_t)(void *dev, ctf_ipc_t *ipc, bool v6, int cmd);
+
+typedef int32 (*ctf_fa_register_t)(ctf_t *ci, ctf_fa_cb_t facb, void *fa);
+typedef void (*ctf_live_t)(ctf_t *ci, ctf_ipc_t *ipc, bool v6);
+#endif /* BCMFA */
+
+/* For broadstream iqos */
+typedef int (*ctf_fwdcb_t)(void *skb, ctf_ipc_t *ipc);
+typedef int32 (*ctf_fwdcb_register_t)(ctf_t *ci, ctf_fwdcb_t fwdcb);
 
 struct ctf_brc_hot {
 	struct ether_addr	ea;	/* Dest address */
@@ -172,6 +205,12 @@ typedef struct ctf_fn {
 	ctf_dev_vlan_delete_t	dev_vlan_delete;
 	ctf_dump_t		dump;
 	ctf_cfg_req_process_t	cfg_req_process;
+#ifdef BCMFA
+	ctf_fa_register_t	fa_register;
+	ctf_live_t		live;
+#endif /* BCMFA */
+	/* For broadstream iqos */
+	ctf_fwdcb_register_t	ctf_fwdcb_register;
 } ctf_fn_t;
 
 struct ctf_pub {
@@ -192,6 +231,8 @@ struct ctf_brc {
 	uint32			live;		/* Counter used to expire the entry */
 	uint32			hits;		/* Num frames matching brc entry */
 	uint64			*bytecnt_ptr;	/* Pointer to the byte counter */
+	uint32			hitting;	/* Indicate how fresh the entry is been used */
+	uint32			ip;
 };
 
 #ifdef CTF_IPV6
@@ -211,6 +252,13 @@ typedef struct ctf_nat {
 	uint16	port;
 } ctf_nat_t;
 
+#ifdef BCMFA
+#define CTF_FA_PEND_ADD_ENTRY		0x1
+#define CTF_FA_ADD_ISPEND(ipc)		((ipc)->flags & CTF_FA_PEND_ADD_ENTRY)
+#define CTF_FA_SET_ADD_PEND(ipc)	((ipc)->flags |= CTF_FA_PEND_ADD_ENTRY)
+#define CTF_FA_CLR_ADD_PEND(ipc)	((ipc)->flags &= ~(CTF_FA_PEND_ADD_ENTRY))
+#endif /* BCMFA */
+
 struct ctf_ipc {
 	struct	ctf_ipc		*next;		/* Pointer to ipc entry */
 	ctf_conn_tuple_t	tuple;		/* Tuple to uniquely id the flow */
@@ -218,17 +266,25 @@ struct ctf_ipc {
 	struct	ether_addr	dhost;		/* Destination MAC address */
 	struct	ether_addr	shost;		/* Source MAC address */
 	void			*txif;		/* Target interface to send */
+	void			*txbif;		/* Target Bridge interface to send */
 	uint32			action;		/* NAT and/or VLAN actions */
 	ctf_brc_t		*brcp;		/* BRC entry corresp to source mac */
 	uint32			live;		/* Counter used to expire the entry */
 	struct	ctf_nat		nat;		/* Manip data for SNAT, DNAT */
 	struct	ether_addr	sa;		/* MAC address of sender */
-	uint8			tos;		/* IPv4 tos or IPv6 traffic class field with ECN cleared */
+	uint8			tos;		/* IPv4 tos or IPv6 traff class excl ECN */
 	uint16			pppoe_sid;	/* PPPOE session to use */
 	void			*ppp_ifp;	/* PPP interface handle */
 	uint32			hits;		/* Num frames matching ipc entry */
 	uint64			*bytecnt_ptr;	/* Pointer to the byte counter */
 	struct	ctf_mark	mark;		/* Mark value to use for the connection */
+#ifdef BCMFA
+	void			*rxif;		/* Receive interface */
+	void			*pkt;		/* Received packet */
+	uint8			flags;		/* Flags for multiple purpose */
+#endif /* BCMFA */
+	/* For broadstream iqos, counter is increased by ipc_tcp_susp or ipc_udp_susp */
+	int			susp_cnt;
 };
 
 extern ctf_t *ctf_kattach(osl_t *osh, uint8 *name);
@@ -245,7 +301,7 @@ extern ctf_t *kcih;
 #define CTF_HOTBRC_CMP(hbrc, da, rxifp) \
 ({ \
 	ctf_brc_hot_t *bh = (hbrc) + CTF_BRC_HOT_HASH(da); \
-	((eacmp((bh)->ea.octet, (da)) == 0) && (bh->brcp) && (bh->brcp->txifp != (rxifp))); \
+	((eacmp((bh)->ea.octet, (da)) == 0) && (bh->brcp->txifp != (rxifp))); \
 })
 
 /* Header prep for packets matching hot bridge cache entry */
@@ -268,5 +324,7 @@ do { \
 	} \
 } while (0)
 
+
+#define	CTF_IS_PKTTOBR(p)	PKTISTOBR(p)
 
 #endif /* _HNDCTF_H_ */

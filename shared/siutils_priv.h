@@ -1,7 +1,7 @@
 /*
  * Include file private to the SOC Interconnect support files.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,23 +15,15 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: siutils_priv.h 347470 2012-07-26 22:51:10Z $
+ * $Id: siutils_priv.h 439537 2013-11-27 03:11:29Z $
  */
 
 #ifndef	_siutils_priv_h_
 #define	_siutils_priv_h_
 
-#ifdef BCMDBG_ERR
-#define	SI_ERROR(args)	printf args
-#else
 #define	SI_ERROR(args)
-#endif	/* BCMDBG_ERR */
 
-#ifdef BCMDBG
-#define	SI_MSG(args)	printf args
-#else
 #define	SI_MSG(args)
-#endif	/* BCMDBG */
 
 #ifdef BCMDBG_SI
 #define	SI_VMSG(args)	printf args
@@ -52,6 +44,18 @@ typedef struct gpioh_item {
 	uint32			event;
 	struct gpioh_item	*next;
 } gpioh_item_t;
+
+
+#define SI_GPIO_MAX		16
+
+typedef struct gci_gpio_item {
+	void			*arg;
+	uint8			gci_gpio;
+	uint8			status;
+	gci_gpio_handler_t	handler;
+	struct gci_gpio_item	*next;
+} gci_gpio_item_t;
+
 
 /* misc si info needed by some of the routines */
 typedef struct si_info {
@@ -94,9 +98,19 @@ typedef struct si_info {
 	uint32	cia[SI_MAXCORES];	/* erom cia entry for each core */
 	uint32	cib[SI_MAXCORES];	/* erom cia entry for each core */
 	uint32	oob_router;		/* oob router registers for axi */
+#if !defined(BCMDONGLEHOST)
+	/* Store NVRAM data so that it is available after reclaim. */
+	uint32 nvram_min_mask;
+	bool min_mask_valid;
+	uint32 nvram_max_mask;
+	bool max_mask_valid;
+#endif /* !BCMDONGLEHOST */
+	gci_gpio_item_t	*gci_gpio_head;	/* gci gpio interrupts head */
+	uint	num_br;		/* # discovered bridges */
+	uint32	br_wrapba[SI_MAXBR];	/* address of bridge controlling wrapper */
 } si_info_t;
 
-#define	SI_INFO(sih)	(si_info_t *)(uintptr)sih
+#define	SI_INFO(sih)	((si_info_t *)(uintptr)sih)
 
 #define	GOODCOREADDR(x, b) (((x) >= (b)) && ((x) < ((b) + SI_MAXCORES * SI_CORE_SIZE)) && \
 		ISALIGNED((x), SI_CORE_SIZE))
@@ -172,6 +186,7 @@ extern void sb_setint(si_t *sih, int siflag);
 extern uint sb_corevendor(si_t *sih);
 extern uint sb_corerev(si_t *sih);
 extern uint sb_corereg(si_t *sih, uint coreidx, uint regoff, uint mask, uint val);
+extern uint32 *sb_corereg_addr(si_t *sih, uint coreidx, uint regoff);
 extern bool sb_iscoreup(si_t *sih);
 extern void *sb_setcoreidx(si_t *sih, uint coreidx);
 extern uint32 sb_core_cflags(si_t *sih, uint32 mask, uint32 val);
@@ -190,11 +205,10 @@ extern uint32 sb_set_initiator_to(si_t *sih, uint32 to, uint idx);
 
 extern bool sb_taclear(si_t *sih, bool details);
 
-#ifdef BCMDBG
-extern void sb_view(si_t *sih, bool verbose);
-extern void sb_viewall(si_t *sih, bool verbose);
+#if defined(BCMDBG_DUMP)
+extern void sb_dump(si_t *sih, struct bcmstrbuf *b);
 #endif
-#if defined(BCMDBG)
+#if defined(BCMDBG_DUMP)
 extern void sb_dumpregs(si_t *sih, struct bcmstrbuf *b);
 #endif
 
@@ -218,6 +232,7 @@ extern void ai_setint(si_t *sih, int siflag);
 extern uint ai_coreidx(si_t *sih);
 extern uint ai_corevendor(si_t *sih);
 extern uint ai_corerev(si_t *sih);
+extern uint32 *ai_corereg_addr(si_t *sih, uint coreidx, uint regoff);
 extern bool ai_iscoreup(si_t *sih);
 extern void *ai_setcoreidx(si_t *sih, uint coreidx);
 extern uint32 ai_core_cflags(si_t *sih, uint32 mask, uint32 val);
@@ -231,14 +246,10 @@ extern uint32 ai_addrspace(si_t *sih, uint asidx);
 extern uint32 ai_addrspacesize(si_t *sih, uint asidx);
 extern void ai_coreaddrspaceX(si_t *sih, uint asidx, uint32 *addr, uint32 *size);
 extern uint ai_wrap_reg(si_t *sih, uint32 offset, uint32 mask, uint32 val);
+extern void ai_enable_backplane_timeouts(si_t *sih);
+extern void ai_clear_backplane_to(si_t *sih);
 
-extern void si_viewall(si_t *sih, bool verbose);
-
-#ifdef BCMDBG
-extern void ai_view(si_t *sih, bool verbose);
-extern void ai_viewall(si_t *sih, bool verbose);
-#endif
-#if defined(BCMDBG)
+#if defined(BCMDBG_DUMP)
 extern void ai_dumpregs(si_t *sih, struct bcmstrbuf *b);
 #endif
 

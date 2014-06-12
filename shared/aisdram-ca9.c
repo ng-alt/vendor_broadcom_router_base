@@ -1,7 +1,7 @@
 /*
  * DDR23 Denali contoller & DDRPHY init routines.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,6 +31,7 @@
 
 #include <ddr40_phy_init.h>
 #include <shmoo_public.h>
+#include <bcm5301x_otp.h>
 
 
 #define DDR_DEFAULT_CLOCK	333
@@ -585,7 +586,7 @@ unsigned int ddr3_init_tab_1600[] = {
 	0,	0x00000600,
 	1,	0x00000000,
 	3,	0x000000a0,
-	4,	0x00000190,
+	4,	0x00061a80,
 	5,	0x16081600,
 	6,	0x06040408,
 	7,	0x0b061c27,
@@ -1196,7 +1197,7 @@ c_ddr_init(unsigned long ra)
 	}
 #ifdef NFLASH_SUPPORT
 embedded_nv:
-#endif /* NFLASH_SUPPORT */
+#endif
 	if (nvh == NULL) {
 		nvh = (struct nvram_header *)(flbase + 1024);
 		if (R_REG(osh, &nvh->magic) != NVRAM_MAGIC) {

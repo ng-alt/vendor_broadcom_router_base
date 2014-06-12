@@ -43,7 +43,7 @@
 #define DOME_G_RADIO_ON        _IOWR(WPS_LED_IOCTL_NUM, 14, int *)
 #define DOME_G_RADIO_OFF       _IOWR(WPS_LED_IOCTL_NUM, 15, int *)
 /* Foxconn added start, Wins, 04/11/2011 */
-#if defined(R6300v2) || defined(R6250) || defined(R6200v2) || defined(R7000)
+#if defined(R6300v2) || defined(R6250) || defined(R6200v2) || defined(R7000) || defined(R8000)
 /* For USB2 LED */
 #define USB2_LED_STATE_ON      _IOWR(WPS_LED_IOCTL_NUM, 16, int *)
 #define USB2_LED_STATE_OFF     _IOWR(WPS_LED_IOCTL_NUM, 17, int *)
@@ -56,6 +56,10 @@
 #define LED_CONTROL_DISABLE_BLINK   _IOWR(WPS_LED_IOCTL_NUM, 20, int *)
 #define LED_CONTROL_TURN_OFF        _IOWR(WPS_LED_IOCTL_NUM, 21, int *)
 /* Foxconn added end, ken chen, 12/13/2013, support LED_CONTROL_SETTINGS */
+#if defined(R8000)
+#define WLAN_G_2_RADIO_ON        _IOWR(WPS_LED_IOCTL_NUM, 22, int *)
+#define WLAN_G_2_RADIO_OFF       _IOWR(WPS_LED_IOCTL_NUM, 23, int *)
+#endif
 
 #define WPS_LED_STOP_NO         (0)
 #define WPS_LED_STOP_RADIO_OFF  (1)
@@ -67,6 +71,8 @@
 #define WPS_LED_GPIO           (GPIO_LED_WLAN)  /* pling modified 02/03/2012, to blink wlan LED during WPS */
 #elif (defined R7000)
 #define WPS_LED_GPIO           (14) /*(14)*/ /* ACR5500 */ /* modified by EricHuang, 1/11/2012 */
+#elif (defined R8000)
+#define WPS_LED_GPIO           (15) /* R8000 */ /* modified by ken Chen, 05/23/2014 */
 #else
 #define WPS_LED_GPIO           (11) /*(14)*/ /* ACR5500 */ /* modified by EricHuang, 1/11/2012 */
 #endif /* WNDR4000AC */

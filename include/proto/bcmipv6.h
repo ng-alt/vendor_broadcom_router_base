@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  *
  * Fundamental constants relating to Neighbor Discovery Protocol
  *
- * $Id: bcmipv6.h 352279 2012-08-22 07:21:57Z $
+ * $Id: bcmipv6.h 439574 2013-11-27 06:37:37Z $
  */
 
 #ifndef _bcmipv6_h_
@@ -50,7 +50,8 @@
 #define IPV6_FRAG_OFFS_SHIFT	3
 
 /* For icmpv6 */
-#define ICMPV6_HEADER_TYPE 	0x3A
+#define ICMPV6_HEADER_TYPE	0x3A
+#define ICMPV6_PKT_TYPE_RA	134
 #define ICMPV6_PKT_TYPE_NS	135
 #define ICMPV6_PKT_TYPE_NA	136
 
@@ -107,12 +108,14 @@ BWL_PRE_PACKED_STRUCT struct ipv6_hdr {
 	struct	ipv6_addr	daddr;
 } BWL_POST_PACKED_STRUCT;
 
+#ifndef _NDISC_H
 /* Neighbor Advertisement/Solicitation Packet Structure */
 BWL_PRE_PACKED_STRUCT struct nd_msg {
-	struct icmp6_hdr	icmph;
-	struct ipv6_addr target;
+        struct icmp6_hdr        icmph;
+        struct ipv6_addr target;
 } BWL_POST_PACKED_STRUCT;
-
+ 
+#endif
 
 /* Neighibor Solicitation/Advertisement Optional Structure */
 BWL_PRE_PACKED_STRUCT struct nd_msg_opt {

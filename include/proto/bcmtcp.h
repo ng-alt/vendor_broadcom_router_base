@@ -1,7 +1,7 @@
 /*
  * Fundamental constants relating to TCP Protocol
  *
- * Copyright (C) 2011, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmtcp.h 327600 2012-04-14 17:50:36Z $
+ * $Id: bcmtcp.h 458522 2014-02-27 02:26:15Z $
  */
 
 #ifndef _bcmtcp_h_
@@ -31,16 +31,22 @@
 
 #define TCP_SRC_PORT_OFFSET	0	/* TCP source port offset */
 #define TCP_DEST_PORT_OFFSET	2	/* TCP dest port offset */
+#define TCP_SEQ_NUM_OFFSET	4	/* TCP sequence number offset */
+#define TCP_ACK_NUM_OFFSET	8	/* TCP acknowledgement number offset */
 #define TCP_HLEN_OFFSET		12	/* HLEN and reserved bits offset */
 #define TCP_FLAGS_OFFSET	13	/* FLAGS and reserved bits offset */
 #define TCP_CHKSUM_OFFSET	16	/* TCP body checksum offset */
 
-#define TCP_FLAG_URG            0x0020
-#define TCP_FLAG_ACK            0x0010
-#define TCP_FLAG_PSH            0x0008
-#define TCP_FLAG_RST            0x0004
-#define TCP_FLAG_SYN            0x0002
-#define TCP_FLAG_FIN            0x0001
+#define TCP_PORT_LEN		2	/* TCP port field length */
+
+/* 8bit TCP flag field */
+#define TCP_FLAG_URG            0x20
+#define TCP_FLAG_ACK            0x10
+#define TCP_FLAG_PSH            0x08
+#define TCP_FLAG_RST            0x04
+#define TCP_FLAG_SYN            0x02
+#define TCP_FLAG_FIN            0x01
+
 #define TCP_HLEN_MASK           0xf000
 #define TCP_HLEN_SHIFT          12
 
@@ -57,27 +63,7 @@ BWL_PRE_PACKED_STRUCT struct bcmtcp_hdr
 	uint16	urg_ptr;	/* Points to seq-num of byte following urg data */
 } BWL_POST_PACKED_STRUCT;
 
-
-/*borg DTM QoS*/
-/* Byte offset of flags in TCP header */
-#define TCP_FLAGS_OFFSET	13
-
 #define TCP_MIN_HEADER_LEN 20
-#define TCP_FLAGS_FIN		0x01
-#define TCP_FLAGS_SYN		0x02
-#define TCP_FLAGS_RST		0x03
-#define TCP_FLAGS_PSH		0x04
-#define TCP_FLAGS_ACK		0x10
-#define TCP_FLAGS_URG		0x20
-#define TCP_FLAGS_ECN		0x40
-#define TCP_FLAGS_CWR		0x80
-
-#define TCP_IS_ACK(tcp_hdr)	(TCP_FLAGS(tcp_hdr) & TCP_FLAGS_ACK)
-
-#define TCP_SRC_PORT(tcp_hdr)	(ntoh16(((struct bcmtcp_hdr*)(tcp_hdr))->src_port))
-#define TCP_DST_PORT(tcp_hdr)	(ntoh16(((struct bcmtcp_hdr*)(tcp_hdr))->dst_port))
-#define TCP_SEQ_NUM(tcp_hdr)	(ntoh32(((struct bcmtcp_hdr*)(tcp_hdr))->seq_num))
-#define TCP_ACK_NUM(tcp_hdr)	(ntoh32(((struct bcmtcp_hdr*)(tcp_hdr))->ack_num))
 
 #define TCP_HDRLEN_MASK 0xf0
 #define TCP_HDRLEN_SHIFT 4
@@ -88,5 +74,11 @@ BWL_PRE_PACKED_STRUCT struct bcmtcp_hdr
 
 /* This marks the end of a packed structure section. */
 #include <packed_section_end.h>
+
+/* To address round up by 32bit. */
+#define IS_TCPSEQ_GE(a, b) ((a - b) < NBITVAL(31))		/* a >= b */
+#define IS_TCPSEQ_LE(a, b) ((b - a) < NBITVAL(31))		/* a =< b */
+#define IS_TCPSEQ_GT(a, b) !IS_TCPSEQ_LE(a, b)		/* a > b */
+#define IS_TCPSEQ_LT(a, b) !IS_TCPSEQ_GE(a, b)		/* a < b */
 
 #endif	/* #ifndef _bcmtcp_h_ */

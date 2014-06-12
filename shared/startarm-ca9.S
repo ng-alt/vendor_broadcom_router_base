@@ -1,7 +1,7 @@
 /*
  * BCM53XXX ARM/Cortext A9 boot code for standalone apps.
  *
- * Copyright (C) 2013, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -61,14 +61,7 @@
 #ifdef TRACE
 #undef TRACE
 #endif
-#ifdef BCMDBG
-#define TRACE(x) \
-	ldr	r9,=(x); \
-	ldr     r10,=SI_ENUM_BASE; \
-	str	r9,[r10,#0x64]
-#else
 #define TRACE(x)
-#endif
 
 #define envram_ofs	0x400
 
@@ -5531,9 +5524,47 @@ FUNC(RunProgram)
 	mov r0,#0		/* A0 = handle */
 	ldr r3,=CFE_EPTSEAL  /* A3 = entrypoint signature */
 	pop {r4}		/* entry point */
-	mov pc,r4		/* go for it. */
 
+	/* Check the MERGE_FRAG function should execute or not,
+	 * according to the information from MERGE_FRAG
+	 * Note: {r0-r4} must be preserved
+	 */
+	ldr	r5, =MERGE_FRAG
+	ldr	r6, [r5]
+	cmp	r6, #0
+	beq	do_run
+	mov	pc, r6	/* Go to _merge_func */
+do_run:
+	mov	pc, r4		/* go for it. */
 END(RunProgram)
+
+
+	.globl _frag_merge_func
+_frag_merge_func:
+	.word _merge_func
+
+	.globl _frag_merge_func_len
+_frag_merge_func_len:
+	.word _merge_func_end - _merge_func
+
+/* This merge_func will relocate at address which is stored at MERGE_FRAG.
+ * It will reference the value which is stored at MERGE_FRAG.
+ * There are the merge_func pointer, des_addr, src_addr and length.
+ * r4 is the entry point, r0-r3 are the parameters for the image.
+ * r5 is the address of MERGE_FRAG
+ */
+FUNC(_merge_func)
+	ldmia	r5, {r9-r12}
+1:
+	ldmia	r11!, {r7-r8}			@ copy 8 bytes from the memory at r11 address
+	stmia	r10!, {r7-r8}			@ store 8 bytes to the memory at r10 address
+						@ r12 is the length, each loop copy 8 bytes
+	subs	r12, r12, #8			@ adjust the length
+	bgt	1b
+
+	mov	pc, r4				@ jump to the entry point
+_merge_func_end:
+END(_merge_func)
 
 /*  *********************************************************************
     *  BOARD_SETLEDS(x)

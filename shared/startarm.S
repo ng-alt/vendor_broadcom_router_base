@@ -1,7 +1,7 @@
 /*
  * HNDRTE ARM run-time initialization and first level exception handling.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,14 +35,7 @@
 /* Debug macro - write a number to memory - use it with caution,
  *  it changes r0 and r1 registers.
  */
-#if defined(BCMDBG)
-#define TRACE(x) \
-	ldr	r0,=x; \
-	ldr	r1,=__watermark; \
-	str	r0,[r1]
-#else
 #define TRACE(x)
-#endif	/* BCMDBG */
 
 	
 /* Instruction macros that hide machine/arch details. */
