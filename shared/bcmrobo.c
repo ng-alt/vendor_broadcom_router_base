@@ -156,7 +156,11 @@
 #define REG_VLAN_PTAG8	0x20	/* 539x: VLAN Default Port Tag register - IMP port */
 #define REG_VLAN_PMAP	0x20	/* 5325: VLAN Priority Re-map register */
 
+#ifndef VLAN_SUPPORT
 #define VLAN_NUMVLANS	16	/* # of VLANs */
+#else
+#define VLAN_NUMVLANS	4095	/* # of VLANs */
+#endif
 
 
 /* ARL/VLAN Table Access page registers */
@@ -1817,7 +1821,9 @@ bcm_robo_config_vlan(robo_info_t *robo, uint8 *mac_addr)
 		if (SRAB_ENAB() && ROBO_IS_BCM5301X(robo->devid))
 			robo_cpu_port_upd(robo, pdesc97, pdescsz);
 	}
-
+#ifdef VLAN_SUPPORT
+    int override_reg = 0;
+#endif
 	/* setup each vlan. max. 16 vlans. */
 	/* force vlan id to be equal to vlan number */
 	for (vid = 0; vid < VLAN_NUMVLANS; vid ++) {
@@ -2006,6 +2012,18 @@ vlan_setup:
 			robo->ops->write_reg(robo, PAGE_VTBL, vtbla, &val8,
 			                     sizeof(val8));
 		}
+#ifdef VLAN_SUPPORT
+        if(getvar(robo->vars,"enable_vlan"))
+        {
+            if(override_reg == 1 && vid == getvar(robo->vars,"internet_vlan"))
+                break;
+            if( vid == (VLAN_NUMVLANS - 1 ) && override_reg == 0)
+            {
+                override_reg = 1;
+                vid = (getvar(robo->vars,"internet_vlan")) - 1;
+            }
+        }
+#endif
 	}
 
 	if (robo->devid == DEVID5325) {
