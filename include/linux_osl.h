@@ -765,7 +765,7 @@ extern void osl_ctfpool_stats(osl_t *osh, void *b);
 #error "CACHE_LINE_SIZE define needed!"
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 14)
-#define CTFMAPPTR(osh, skb)	(((struct sk_buff*)(skb))->sp)
+#define CTFMAPPTR(osh, skb)	(((struct sk_buff*)(skb))->ctfmap)
 #else /* 2.6.14 */
 #define CTFMAPPTR(osh, skb)	(((struct sk_buff*)(skb))->list)
 #endif /* 2.6.14 */
