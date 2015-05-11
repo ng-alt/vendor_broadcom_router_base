@@ -216,6 +216,12 @@ nflash_check_id(uint8 *id)
 	case NFL_VENDOR_MXIC:
 		name = "Mxic";
 		break;
+	case NFL_VENDOR_ZENTEL:
+		name = "Zentel";
+		break;
+	case NFL_VENDOR_WINBOND:
+		name = "Winbond";
+		break;        
 	default:
 		printf("No NAND flash type found\n");
 		break;
@@ -509,6 +515,7 @@ nflash_read(hndnand_t *nfl, uint64 offset, uint len, uchar *buf)
 	uint res;
 
 	ASSERT(sih);
+
 	mask = NFL_SECTOR_SIZE - 1;
 	if ((offset & mask) != 0 || (len & mask) != 0)
 		return 0;

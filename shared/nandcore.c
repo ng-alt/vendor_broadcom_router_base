@@ -357,6 +357,12 @@ nandcore_check_id(uint8 *id)
 	case NFL_VENDOR_MXIC:
 		name = "Mxic";
 		break;
+	case NFL_VENDOR_ZENTEL:
+		name = "Zentel";
+		break;
+	case NFL_VENDOR_WINBOND:
+		name = "Winbond";
+		break;
 	default:
 		printf("No NAND flash type found\n");
 		break;
@@ -549,12 +555,12 @@ nandcore_init(si_t *sih)
 	nandcore.phybase = SI_NS_NANDFLASH;
 	nandcore.base = (uint32)REG_MAP(SI_NS_NANDFLASH, SI_FLASH_WINDOW);
 
-#ifdef BCMDBG
-	/* Configuration readback */
-	printf("R_REG(cs_nand_select)	= 0x%08x\n", R_REG(osh, &nc->cs_nand_select));
-	printf("R_REG(config_cs0)	= 0x%08x\n", R_REG(osh, &nc->config_cs0));
-	printf("R_REG(acc_control_cs0)	= 0x%08x\n", R_REG(osh, &nc->acc_control_cs0));
-#endif /* BCMDBG */
+#if 1 /*Ares Test*/
+/* try override spare area size to 16*/
+    acc_control = acc_control & ~(NANDAC_CS0_SPARE_AREA_SIZE);
+    acc_control = acc_control | (16<<0); 
+    W_REG(osh, &nc->acc_control_cs0, acc_control);
+#endif
 
 	return nandcore.size ? &nandcore : NULL;
 }

@@ -14,7 +14,7 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
 # OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-# $Id: wl.mk 365823 2012-10-31 04:24:30Z $
+# $Id: wl.mk 384173 2013-02-09 01:51:04Z $
 
 
 
@@ -69,6 +69,11 @@ ifneq ($(WLTXBF),0)
 endif
 endif
 #endif
+
+ifeq ($(WLATF),1)
+	WLATF := 1
+	WLFLAGS += -DWLATF
+endif
 
 
 #ifdef BCMDBG_MEM
@@ -303,6 +308,9 @@ ifeq ($(WL),1)
 	ifeq ($(WL11AC),1)
 		WLFILES_SRC_HI += src/wl/sys/wlc_vht.c
 		WLFILES_SRC_HI += src/wl/sys/wlc_txbf.c
+	endif
+	ifeq ($(WLATF),1)
+		WLFILES_SRC_HI += src/wl/sys/wlc_airtime.c
 	endif
 #ifdef WL11H
 	ifeq ($(WL11H),1)
@@ -803,6 +811,9 @@ ifeq ($(WMF), 1)
 endif
 ifeq ($(IGMP_UCQUERY), 1)
 	WLFLAGS += -DWL_IGMP_UCQUERY
+endif
+ifeq ($(UCAST_UPNP), 1)
+	WLFLAGS += -DWL_UCAST_UPNP
 endif
 #endif
 
@@ -1399,6 +1410,12 @@ ifeq ($(WLPKTDLYSTAT_IND),1)
 endif
 #endif
 
+#ifdef WLINTFERSTAT
+ifeq ($(WLINTFERSTAT),1)
+        WLFLAGS += -DWLINTFERSTAT
+endif
+#endif
+
 ## --- which buses
 
 # silicon backplane
@@ -1910,17 +1927,3 @@ endif
 # Legacy WLFILES pathless definition, please use new src relative path
 # in make files. 
 WLFILES := $(sort $(notdir $(WLFILES_SRC)))
-
-
-# ROM auto abandon feature.
-ifeq ($(BCM_ROM_AUTO_ABANDON),1)
-	# auto ROM abandons.
-	ifeq ($(WL_ROM_PRE_STRS_MOD),1)
-		EXTRA_DFLAGS += -DWL_ROM_PRE_STRS_MOD
-	endif
-
-	# to the end. This avoids significant ROM abandons.
-	ifeq ($(WL_ROM_PRE_WL11U_MOD),1)
-		EXTRA_DFLAGS += -DWL_ROM_PRE_WL11U_MOD
-	endif
-endif

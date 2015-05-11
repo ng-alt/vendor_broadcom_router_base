@@ -63,9 +63,9 @@ typedef uint16 chanspec_t;
 #define WL_CHANSPEC_BW_10		0x0400
 #define WL_CHANSPEC_BW_20		0x0800
 #define WL_CHANSPEC_BW_40		0x0C00
-/* add start by Hank for HT80 03/14/2012*/
+/*Foxconn add start by Hank for HT80 03/14/2012*/
 #define WL_CHANSPEC_BW_80		0x1000
-/* add end by Hank for HT80 03/14/2012*/
+/*Foxconn add end by Hank for HT80 03/14/2012*/
 
 #define WL_CHANSPEC_BAND_MASK		0xf000
 #define WL_CHANSPEC_BAND_SHIFT		12
