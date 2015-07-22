@@ -19,6 +19,7 @@
  * $Id: hnddma.c 382176 2013-01-31 03:47:28Z $
  */
 
+#define R6400_RXSTATUS0_WAR 1
 #include <bcm_cfg.h>
 #include <typedefs.h>
 #include <bcmdefs.h>
@@ -1547,14 +1548,38 @@ static void *
 _dma_peeknextrxp(dma_info_t *di)
 {
 	uint16 end, i;
-
+#ifdef R6400_RXSTATUS0_WAR
+	uint32 status0 = 1, status1 = 1, k;
+#endif
 	if (di->nrxd == 0)
 		return (NULL);
 
 	if (DMA64_ENAB(di) && DMA64_MODE(di)) {
+#ifdef R6400_RXSTATUS0_WAR
+	for (k = 0; (k < 10) && ((status1 & 1) || (status0 & 1)); k++) {
+		status1 = R_REG(di->osh, &di->d64rxregs->status1);
+		status0 = R_REG(di->osh, &di->d64rxregs->status0);
+	}
+
+	if (status0 & 1) {
+		printf("\n _dma_peeknextrxp %s ERROR !!!! status0 0x%08x !\n\n", di->name, status0);
+		status0 = R_REG(di->osh, &di->d64rxregs->status0);
+	}
+
+	if (status1 & 1) {
+		printf("\n _dma_peeknextrxp %s ERROR !!!! status1 0x%08x !\n\n", di->name, status1);
+		status1 = R_REG(di->osh, &di->d64rxregs->status1);
+	}
+
+	end = (uint16)B2I(((status0 & D64_RS0_CD_MASK) -
+		di->rcvptrbase) & D64_RS0_CD_MASK, dma64dd_t);
+	di->rs0cd = end;
+#else
 		end = (uint16)B2I(((R_REG(di->osh, &di->d64rxregs->status0) & D64_RS0_CD_MASK) -
 			di->rcvptrbase) & D64_RS0_CD_MASK, dma64dd_t);
 		di->rs0cd = end;
+
+#endif /* R6400_RXSTATUS0_WAR */
 	} else if (DMA32_ENAB(di)) {
 		end = (uint16)B2I(R_REG(di->osh, &di->d32rxregs->status) & RS_CD_MASK, dma32dd_t);
 		di->rs0cd = end;
@@ -3209,7 +3234,9 @@ dma64_getnextrxp(dma_info_t *di, bool forceall)
 #if ((!defined(__mips__) && !defined(BCM47XX_CA9)) || defined(__NetBSD__))
 	dmaaddr_t pa;
 #endif
-
+#ifdef R6400_RXSTATUS0_WAR
+	uint32 status0 = 1, status1 = 1, k;
+#endif
 	/* if forcing, dma engine must be disabled */
 	ASSERT(!forceall || !dma64_rxenabled(di));
 
@@ -3220,9 +3247,31 @@ dma64_getnextrxp(dma_info_t *di, bool forceall)
 		return (NULL);
 
 	if (di->rxin == di->rs0cd) {
+#ifdef R6400_RXSTATUS0_WAR
+	for (k = 0; (k < 10) && ((status1 & 1) || (status0 & 1)); k++) {
+		status1 = R_REG(di->osh, &di->d64rxregs->status1);
+		status0 = R_REG(di->osh, &di->d64rxregs->status0);
+	}
+
+	if (status0 & 1) {
+		printf("\n dma64_getnextrxp %s ERROR !!!! status0 0x%08x !\n\n", di->name, status0);
+		status0 = R_REG(di->osh, &di->d64rxregs->status0);
+	}
+
+	if (status1 & 1) {
+		printf("\n dma64_getnextrxp %s ERROR !!!! status1 0x%08x !\n\n", di->name, status1);
+		status1 = R_REG(di->osh, &di->d64rxregs->status1);
+	}
+
+		curr = (uint16)B2I(((status0 & D64_RS0_CD_MASK) -
+			di->rcvptrbase) & D64_RS0_CD_MASK, dma64dd_t);
+		di->rs0cd = curr;
+
+#else
 		curr = (uint16)B2I(((R_REG(di->osh, &di->d64rxregs->status0) & D64_RS0_CD_MASK) -
 			di->rcvptrbase) & D64_RS0_CD_MASK, dma64dd_t);
 		di->rs0cd = curr;
+#endif /* R6400_RXSTATUS0_WAR */
 	} else
 		curr = di->rs0cd;
 
