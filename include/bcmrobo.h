@@ -66,10 +66,7 @@
 #define ROBO_INVALID_PORT_SPEED     (0x03)
 
 /*foxconn Han edited start, 05/17/2013 for R7000 don't have to do this*/
-#if (defined R6400)
-#define ROBO_PORT_TO_LABEL_PORT(a)  (a)
-#define LABEL_PORT_TO_ROBO_PORT(a)  (a)
-#elif (defined R7000)
+#if (defined R7000)
 #define ROBO_PORT_TO_LABEL_PORT(a)  (5-(a))
 #define LABEL_PORT_TO_ROBO_PORT(a)  (5-(a))
 #else
