@@ -40,8 +40,9 @@
 #define DEVID53012	0x53012	/* 53012 */
 #define DEVID53018	0x53018	/* 53018 */
 #define DEVID53019	0x53019	/* 53019 */
+#define DEVID53030	0x53030	/* 53030 */
 #define ROBO_IS_BCM5301X(id) ((id) == DEVID53010 || (id) == DEVID53011 || (id) == DEVID53012 || \
-(id) == DEVID53018 || (id) == DEVID53019)
+(id) == DEVID53018 || (id) == DEVID53019 || (id) == DEVID53030)
 /* foxconn added start, zacker, 10/15/2010 */
 #define LAN_VLAN_ENTRY_IDX          (1)//LAN is VLAN ID 1
 #define WAN_VLAN_ENTRY_IDX          (2)//WAN is VLAN ID 2
@@ -204,6 +205,7 @@ extern void bcm_robo_detach(robo_info_t *robo);
 extern int bcm_robo_enable_device(robo_info_t *robo);
 extern int bcm_robo_config_vlan(robo_info_t *robo, uint8 *mac_addr);
 extern int bcm_robo_enable_switch(robo_info_t *robo);
+extern int bcm_robo_flow_control(robo_info_t *robo, bool set);
 
 
 extern void robo_watchdog(robo_info_t *robo);
@@ -222,5 +224,10 @@ extern void robo_plc_hw_init(robo_info_t *robo);
 
 void bcm_robo_snooping_add(uint32 mgrp_ip, int portid);
 void bcm_robo_snooping_del(uint32 mgrp_ip, int portid);
+#ifdef BCMFA
+extern void robo_fa_aux_init(robo_info_t *robo);
+extern void robo_fa_aux_enable(robo_info_t *robo, bool enable);
+extern void robo_fa_enable(robo_info_t *robo, bool on, bool bhdr);
+#endif
 
 #endif /* _bcm_robo_h_ */

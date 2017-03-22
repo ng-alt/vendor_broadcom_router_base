@@ -230,6 +230,7 @@ extern hnddma_t * dma_attach(osl_t *osh, const char *name, si_t *sih,
 #define dma_burstlen_set(di, rxlen, txlen)	((di)->di_fn->burstlen_set(di, rxlen, txlen))
 #define dma_avoidance_cnt(di)		((di)->di_fn->avoidancecnt(di))
 #define dma_param_set(di, paramid, paramval)	((di)->di_fn->param_set(di, paramid, paramval))
+#define dma_activerxbuf(di)		((di)->di_fn->dma_activerxbuf(di))
 
 #else /* BCMDMA32 */
 extern const di_fcn_t dma64proc;

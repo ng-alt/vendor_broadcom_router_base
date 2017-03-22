@@ -31,6 +31,7 @@
 
 #include <ddr40_phy_init.h>
 #include <shmoo_public.h>
+#include <bcm5301x_otp.h>
 
 
 #define DDR_DEFAULT_CLOCK	333
@@ -585,7 +586,7 @@ unsigned int ddr3_init_tab_1600[] = {
 	0,	0x00000600,
 	1,	0x00000000,
 	3,	0x000000a0,
-	4,	0x00000190,
+	4,	0x00061a80,
 	5,	0x16081600,
 	6,	0x06040408,
 	7,	0x0b061c27,
@@ -1016,7 +1017,7 @@ Program_Digital_Core_Power_Voltage(si_t *sih)
 		return retval;
 	}
 
-	if (CHIPID(sih->chip) == BCM4707_CHIP_ID) {
+	if (CHIPID(sih->chip) == BCM4707_CHIP_ID || CHIPID(sih->chip) == BCM47094_CHIP_ID) {
 		if (sih->chippkg != BCM4709_PKG_ID) {
 			/* access internal regulator phy by setting the MDC/MDIO
 			 * bus frequency to 125/8

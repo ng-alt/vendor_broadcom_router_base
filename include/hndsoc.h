@@ -179,6 +179,7 @@
 #define CC_4706B0_CORE_REV	0x8000001f		/* chipcommon core */
 #define SOCRAM_4706B0_CORE_REV	0x80000005		/* internal memory core */
 #define GMAC_4706B0_CORE_REV	0x80000000		/* Gigabit MAC core */
+#define NS_PCIEG2_CORE_REV_B0	0x7		/* NS-B0 PCIE Gen 2 core rev */
 
 /* There are TWO constants on all HND chips: SI_ENUM_BASE above,
  * and chipcommon being the first core:

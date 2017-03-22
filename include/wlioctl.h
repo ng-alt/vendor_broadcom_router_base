@@ -1890,7 +1890,8 @@ typedef struct wlc_iov_trx_s {
 #define WLC_SCAN_CQ				320
 #define WLC_GET_RSSI_QDB			321 /* qdB portion of the RSSI */
 
-#define WLC_LAST				322
+#define WLC_GET_KEY_BY_ID                       322
+#define WLC_LAST                                323             /* XXX The last ioctl. Also push this*/
 
 #ifndef EPICTRL_COOKIE
 #define EPICTRL_COOKIE		0xABADCEDE

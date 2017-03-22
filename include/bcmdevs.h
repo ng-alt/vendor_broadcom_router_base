@@ -1,7 +1,7 @@
 /*
  * Broadcom device-specific manifest constants.
  *
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2015, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcmdevs.h 364668 2012-10-24 22:55:30Z $
+ * $Id: bcmdevs.h 532995 2015-02-09 07:35:43Z $
  */
 
 #ifndef	_BCMDEVS_H
@@ -227,6 +227,8 @@
 #define	BCM4716_DEVICE_ID	0x4722		/* 4716 base devid */
 #define	BCM47XX_USB30H_ID	0x472a		/* 47xx usb 3.0 host */
 #define	BCM47XX_USB30D_ID	0x472b		/* 47xx usb 3.0 device */
+#define	BCM47XX_SDIO3H_ID	0x472c		/* 47xx sdio 3 host */
+
 #define BCM47XX_SMBUS_EMU_ID	0x47fe		/* 47xx emulated SMBus device */
 #define	BCM47XX_XOR_EMU_ID	0x47ff		/* 47xx emulated XOR engine */
 #define	EPI41210_DEVICE_ID	0xa0fa		/* bcm4210 */
@@ -302,8 +304,11 @@
 #define	BCM4704_CHIP_ID		0x4704		/* 4704 chipcommon chipid */
 #define	BCM4706_CHIP_ID		0x5300		/* 4706 chipcommon chipid */
 #define BCM4707_CHIP_ID		53010		/* 4707 chipcommon chipid */
+#define BCM47094_CHIP_ID	53030		/* 4707 chipcommon chipid */
 #define BCM53018_CHIP_ID	53018		/* 53018 chipcommon chipid */
-#define BCM4707_CHIP(chipid)	(((chipid) == BCM4707_CHIP_ID) || ((chipid) == BCM53018_CHIP_ID))
+#define BCM4707_CHIP(chipid)	(((chipid) == BCM4707_CHIP_ID) || \
+				((chipid) == BCM53018_CHIP_ID) || \
+				((chipid) == BCM47094_CHIP_ID))
 #define	BCM4710_CHIP_ID		0x4710		/* 4710 chipid */
 #define	BCM4712_CHIP_ID		0x4712		/* 4712 chipcommon chipid */
 #define	BCM4716_CHIP_ID		0x4716		/* 4716 chipcommon chipid */
@@ -470,6 +475,8 @@
 #define BFL_SROM11_BTCOEX  0x00000001  /* Board supports BTCOEX */
 #define BFL_SROM11_WLAN_BT_SH_XTL  0x00000002  /* bluetooth and wlan share same crystal */
 #define BFL_SROM11_EXTLNA	0x00001000  /* Board has an external LNA in 2.4GHz band */
+#define BFL_SROM11_EPA_TURNON_TIME     0x00018000  /* 2 bits for different PA turn on times */
+#define BFL_SROM11_EPA_TURNON_TIME_SHIFT  15
 #define BFL_SROM11_EXTLNA_5GHz	0x10000000  /* Board has an external LNA in 5GHz band */
 #define BFL_SROM11_GAINBOOSTA01	0x20000000  /* 5g Gainboost for core0 and core1 */
 #define BFL2_SROM11_APLL_WAR	0x00000002  /* Flag to implement alternative A-band PLL settings */
@@ -901,6 +908,7 @@
 #define BCM94360CS              0x061B
 #define BCM94360J28_D11AC2G     0x0c00
 #define BCM94360J28_D11AC5G     0x0c01
+#define BCM94360USBH5_D11AC5G	0x06aa
 
 /* 4350 Boards */
 #define BCM94350X52B            0X0116

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
+ * Copyright (C) 2015, Broadcom Corporation. All Rights Reserved.
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: hndctf.h 385684 2013-02-17 20:32:12Z $
+ * $Id: hndctf.h 559201 2015-05-27 00:24:11Z $
  */
 
 #ifndef _HNDCTF_H_
@@ -29,6 +29,8 @@
  * disabled if the functionality has impact on performance.
  */
 #define CTFVLSTATS
+
+#define CTFEXHDL
 
 #define CTF_ENAB(ci)		(((ci) != NULL) && (ci)->_ctf)
 
@@ -88,6 +90,14 @@
 #define ctf_cfg_req_process(ci, c)	if (CTF_ENAB(ci)) (ci)->fn.cfg_req_process(ci, c)
 #define ctf_dev_unregister(ci, d)	if (CTF_ENAB(ci)) (ci)->fn.dev_unregister(ci, d)
 
+#ifdef CTFEXHDL /* For ctf extra handler */
+#define ctf_extracb_register(ci, cb, type)           \
+		(CTF_ENAB(ci) ? (ci)->fn.ctf_extracb_register(ci, cb, type) : BCME_OK)
+
+#define CTF_CBTYPE_PREHDL 1	/* Before parsing packets */
+#endif /* CTFEXHDL */
+
+#define ctf_clear(ci)			if (CTF_ENAB(ci)) (ci)->fn.clear(ci)
 #define CTFCNTINCR(s) ((s)++)
 #define CTFCNTADD(s, c) ((s) += (c))
 
@@ -138,6 +148,10 @@ typedef int32 (*ctf_dev_vlan_add_t)(ctf_t *ci, void *dev, uint16 vid, void *vlde
 typedef int32 (*ctf_dev_vlan_delete_t)(ctf_t *ci, void *dev, uint16 vid);
 typedef void (*ctf_dump_t)(ctf_t *ci, struct bcmstrbuf *b);
 typedef void (*ctf_cfg_req_process_t)(ctf_t *ci, void *arg);
+#ifdef CTFEXHDL
+typedef int (*ctf_extracb_t)(void *skb, void *args);
+typedef int32 (*ctf_extracb_register_t)(ctf_t *ci, ctf_extracb_t extracb, uint8 type);
+#endif /* CTFEXHDL */
 
 struct ctf_brc_hot {
 	struct ether_addr	ea;	/* Dest address */
@@ -172,6 +186,9 @@ typedef struct ctf_fn {
 	ctf_dev_vlan_delete_t	dev_vlan_delete;
 	ctf_dump_t		dump;
 	ctf_cfg_req_process_t	cfg_req_process;
+#ifdef CTFEXHDL
+	ctf_extracb_register_t	ctf_extracb_register;
+#endif /* CTFEXHDL */
 } ctf_fn_t;
 
 struct ctf_pub {
