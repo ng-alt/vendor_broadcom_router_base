@@ -583,6 +583,8 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 #define PKTID(skb)              ({BCM_REFERENCE(skb); 0;})
 #define PKTSETID(skb, id)       ({BCM_REFERENCE(skb); BCM_REFERENCE(id);})
 #define PKTSHRINK(osh, m)		({BCM_REFERENCE(osh); m;})
+#define PKTCB_PORT_ID(skb) \
+	(((struct sk_buff*)(skb))->fpath_cb[sizeof(((struct sk_buff*)(skb))->fpath_cb) - 18])
 
 #ifdef BCMDBG_CTRACE
 #define	DEL_CTRACE(zosh, zskb) { \

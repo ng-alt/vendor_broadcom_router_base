@@ -96,6 +96,7 @@
 #define ctf_live(ci, i, v6)		(CTF_ENAB(ci) ? (ci)->fn.live(ci, i, v6) : FALSE)
 #endif /* BCMFA */
 
+#define ctf_clear(ci, pnum, b)		if (CTF_ENAB(ci)) (ci)->fn.clear(ci, pnum, b)
 /* For broadstream iqos */
 #define ctf_fwdcb_register(ci, cb)           \
 		(CTF_ENAB(ci) ? (ci)->fn.ctf_fwdcb_register(ci, cb) : BCME_OK)
@@ -168,6 +169,7 @@ typedef int32 (*ctf_fa_register_t)(ctf_t *ci, ctf_fa_cb_t facb, void *fa);
 typedef void (*ctf_live_t)(ctf_t *ci, ctf_ipc_t *ipc, bool v6);
 #endif /* BCMFA */
 
+typedef void (*ctf_clear_t)(ctf_t *ci, uint portnum, struct bcmstrbuf *b);
 /* For broadstream iqos */
 typedef int (*ctf_fwdcb_t)(void *skb, ctf_ipc_t *ipc);
 typedef int32 (*ctf_fwdcb_register_t)(ctf_t *ci, ctf_fwdcb_t fwdcb);
@@ -211,6 +213,7 @@ typedef struct ctf_fn {
 #endif /* BCMFA */
 	/* For broadstream iqos */
 	ctf_fwdcb_register_t	ctf_fwdcb_register;
+	ctf_clear_t		clear;
 } ctf_fn_t;
 
 struct ctf_pub {
@@ -285,6 +288,7 @@ struct ctf_ipc {
 #endif /* BCMFA */
 	/* For broadstream iqos, counter is increased by ipc_tcp_susp or ipc_udp_susp */
 	int			susp_cnt;
+	uint8			portmask;	/* Port Bitmask. PortN: BitN (N: 0~4) */
 };
 
 extern ctf_t *ctf_kattach(osl_t *osh, uint8 *name);
