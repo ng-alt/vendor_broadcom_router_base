@@ -176,8 +176,10 @@ typedef uint16 chanspec_t;
 #endif
 
 #endif /* !WL11N_20MHZONLY */
+#ifndef ACS_INTF_DETECT_PATCH
+#define ACS_INTF_DETECT_PATCH
+#endif
 
-//#define ACS_INTF_DETECT_PATCH
 #ifdef ACS_INTF_DETECT_PATCH
 #define CHSPEC_IS2G40(chspec) \
 	((((chspec) & WL_CHANSPEC_BAND_MASK) == WL_CHANSPEC_BAND_2G) && \
