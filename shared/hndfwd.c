@@ -421,9 +421,11 @@ __fwder_wofa_del(fwder_wofa_t * fwder_wofa, uint16 * symbol, wofa_t wofa)
 						   "%s sym->wofa<0x%08x> != wofa<0x%08x>\n",
 						   __FUNCTION__, (uint)sym->wofa, (uint)wofa));
 					}
-					sym->wofa = FWDER_WOFA_INVALID;
-					sym->hash16 = 0; /* 0 is a valid value */
-					fwder_wofa->syms--;
+					else {
+					    sym->wofa = FWDER_WOFA_INVALID;
+					    sym->hash16 = 0; /* 0 is a valid value */
+					    fwder_wofa->syms--;
+					}
 				}
 			}
 			sym++; /* next bin in bkt collision list */
