@@ -72,6 +72,7 @@
 #define IOV_MACWR			19
 #define IOV_DUMP_FWDER		20
 #define IOV_CAP			21
+#define IOV_CLEAR_CTF		22
 
 #if defined(linux) || defined(__ECOS)
 #define SIOCSETCUP		(SIOCDEVPRIVATE + ETCUP)
