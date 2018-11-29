@@ -168,7 +168,7 @@ gpio_exit(void)
 	gpiodev_handle = NULL;
 	devfs_unregister_chrdev(gpio_major, "gpio");
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0) */
-	si_detach(gpio_sih);
+	//si_detach(gpio_sih);
 }
 
 module_init(gpio_init);

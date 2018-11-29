@@ -463,6 +463,9 @@ error:
 	return;
 }
 
+#define AI_SETCOREIDX_MAPSIZE(coreid) \
+	(((coreid) == NS_CCB_CORE_ID) ? 15 * SI_CORE_SIZE : SI_CORE_SIZE)
+
 /* This function changes the logical "focus" to the indicated core.
  * Return the current core's virtual address.
  */
@@ -489,7 +492,8 @@ ai_setcoreidx(si_t *sih, uint coreidx)
 	case SI_BUS:
 		/* map new one */
 		if (!sii->regs[coreidx]) {
-			sii->regs[coreidx] = REG_MAP(addr, SI_CORE_SIZE);
+			sii->regs[coreidx] = REG_MAP(addr,
+				AI_SETCOREIDX_MAPSIZE(sii->coreid[coreidx]));
 			ASSERT(GOODREGS(sii->regs[coreidx]));
 		}
 		sii->curmap = regs = sii->regs[coreidx];
