@@ -1271,6 +1271,9 @@ BCMROMFN(bcm_strtoul)(const char *cp, char **endp, uint base)
 
 	minus = FALSE;
 
+	if (!cp || !*cp)
+		goto error;
+
 	while (bcm_isspace(*cp))
 		cp++;
 
@@ -1307,7 +1310,7 @@ BCMROMFN(bcm_strtoul)(const char *cp, char **endp, uint base)
 		last_result = result;
 		cp++;
 	}
-
+error:
 	if (minus)
 		result = (ulong)(-(long)result);
 
