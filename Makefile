@@ -391,6 +391,9 @@ endif
 	@echo '#define RT_SWPJVERNO "$(SWPJVERNO)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_NAME "$(BUILD_NAME)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_INFO "$(BUILD_TIME) $(BUILD_USER)@$(BUILD_INFO)"' >> router/shared/version.h
+ifneq ($(BRAND),)
+	@echo '#define RT_BRAND "$(BRAND)"' >> router/shared/version.h
+endif
 	@echo '#endif' >> router/shared/version.h
 ifneq ($(NVRAM_ENCRYPT),$(filter $(NVRAM_ENCRYPT),n))
 	@echo '#ifdef RTCONFIG_NVRAM_ENCRYPT' >> router/shared/version.h
